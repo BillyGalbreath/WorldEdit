@@ -91,6 +91,7 @@ public class BrushCommands {
         aliases = "unbind",
         desc = "Unbind a bound brush from your current item"
     )
+    @CommandPermissions("worldedit.brush.none")
     void none(Player player, LocalSession session) throws WorldEditException {
         ToolCommands.setToolNone(player, session, true);
     }

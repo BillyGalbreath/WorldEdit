@@ -72,6 +72,7 @@ public class WorldEditCommands {
         aliases = { "ver" },
         desc = "Get WorldEdit version"
     )
+    @CommandPermissions("worldedit.version")
     public void version(Actor actor) {
         actor.printInfo(TranslatableComponent.of("worldedit.version.version", TextComponent.of(WorldEdit.getVersion())));
         actor.printInfo(TextComponent.of("https://github.com/EngineHub/WorldEdit/"));
@@ -142,6 +143,7 @@ public class WorldEditCommands {
         name = "cui",
         desc = "Complete CUI handshake (internal usage)"
     )
+    @CommandPermissions("worldedit.cui")
     public void cui(Player player, LocalSession session) {
         session.setCUISupport(true);
         session.dispatchCUISetup(player);
@@ -151,6 +153,7 @@ public class WorldEditCommands {
         name = "tz",
         desc = "Set your timezone for snapshots"
     )
+    @CommandPermissions("worldedit.tz")
     public void tz(Actor actor, LocalSession session,
                    @Arg(desc = "The timezone to set")
                        String timezone) {

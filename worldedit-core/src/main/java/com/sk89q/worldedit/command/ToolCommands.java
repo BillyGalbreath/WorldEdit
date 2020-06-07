@@ -20,6 +20,7 @@
 package com.sk89q.worldedit.command;
 
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
 import com.sk89q.worldedit.LocalConfiguration;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -39,6 +40,7 @@ import com.sk89q.worldedit.command.tool.Tool;
 import com.sk89q.worldedit.command.tool.TreePlanter;
 import com.sk89q.worldedit.command.util.CommandPermissions;
 import com.sk89q.worldedit.command.util.CommandPermissionsConditionGenerator;
+import com.sk89q.worldedit.command.util.PermissionCondition;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.internal.command.CommandRegistrationHandler;
@@ -103,6 +105,7 @@ public class ToolCommands {
             )
             .collect(Collectors.toSet());
         commandManager.register("tool", command -> {
+            command.condition(new PermissionCondition(ImmutableSet.of("worldedit.tool")));
             command.addPart(SubCommandPart.builder(
                 TranslatableComponent.of("tool"),
                 TextComponent.of("The tool to bind")
@@ -147,6 +150,7 @@ public class ToolCommands {
         aliases = "unbind",
         desc = "Unbind a bound tool from your current item"
     )
+    @CommandPermissions("worldedit.tool.none")
     public void none(Player player, LocalSession session) throws WorldEditException {
         setToolNone(player, session, false);
     }

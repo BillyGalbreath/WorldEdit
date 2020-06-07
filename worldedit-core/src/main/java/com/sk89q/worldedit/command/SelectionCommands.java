@@ -551,6 +551,7 @@ public class SelectionCommands {
         aliases = { ";", "/desel", "/deselect" },
         desc = "Choose a region selector"
     )
+    @CommandPermissions("worldedit.selection.sel")
     public void select(Actor actor, World world, LocalSession session,
                        @Arg(desc = "Selector to switch to", def = "")
                            SelectorChoice selector,
