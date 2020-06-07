@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -64,6 +65,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Expression {
 
+    private final String source;
     private final SlotTable slots = new SlotTable();
     private final List<String> providedSlots;
     private final ExpressionParser.AllStatementsContext root;
@@ -75,6 +77,9 @@ public class Expression {
     }
 
     private Expression(String expression, String... variableNames) throws ExpressionException {
+        checkNotNull(expression, "Expression cannot be null.");
+        checkArgument(!expression.isEmpty(), "Expression cannot be empty string.");
+        this.source = expression;
         slots.putSlot("e", new LocalSlot.Constant(Math.E));
         slots.putSlot("pi", new LocalSlot.Constant(Math.PI));
         slots.putSlot("true", new LocalSlot.Constant(1));
@@ -122,12 +127,18 @@ public class Expression {
         Instant deadline = Instant.now().plusMillis(timeout);
         // evaluation exceptions are thrown out of this method
         Double result = compiledExpression.execute(new ExecutionData(slots, functions, deadline));
-        checkNotNull(result, "Expression must result in a value");
+        if (result == null) {
+            throw new EvaluationException(-1, "Expression must result in a value");
+        }
         return result;
     }
 
     public void optimize() {
         // TODO optimizing
+    }
+
+    public String getSource() {
+        return source;
     }
 
     @Override

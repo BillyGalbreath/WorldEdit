@@ -23,19 +23,19 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.renderer.TranslatableComponentRenderer;
 import com.sk89q.worldedit.util.io.ResourceLoader;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Locale;
@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -81,12 +82,13 @@ public class TranslationManager {
     );
     private Locale defaultLocale = Locale.ENGLISH;
 
-    private final WorldEdit worldEdit;
+    private final ResourceLoader resourceLoader;
 
     private final Set<Locale> checkedLocales = new HashSet<>();
 
-    public TranslationManager(WorldEdit worldEdit) {
-        this.worldEdit = worldEdit;
+    public TranslationManager(ResourceLoader resourceLoader) {
+        checkNotNull(resourceLoader);
+        this.resourceLoader = resourceLoader;
     }
 
     public void setDefaultLocale(Locale defaultLocale) {
@@ -107,18 +109,22 @@ public class TranslationManager {
     }
 
     private Optional<Map<String, String>> loadTranslationFile(String filename) {
-        Map<String, String> baseTranslations;
+        Map<String, String> baseTranslations = new ConcurrentHashMap<>();
 
-        try (InputStream stream = ResourceLoader.getResourceRoot("lang/" + filename).openStream()) {
-            baseTranslations = parseTranslationFile(stream);
+        try {
+            URL resource = resourceLoader.getRootResource("lang/" + filename);
+            if (resource != null) {
+                try (InputStream stream = resource.openStream()) {
+                    baseTranslations = parseTranslationFile(stream);
+                }
+            }
         } catch (IOException e) {
             // Seem to be missing base. If the user has provided a file use that.
-            baseTranslations = new ConcurrentHashMap<>();
         }
 
-        File localFile = worldEdit.getWorkingDirectoryFile("lang/" + filename);
-        if (localFile.exists()) {
-            try (InputStream stream = new FileInputStream(localFile)) {
+        Path localFile = resourceLoader.getLocalResource("lang/" + filename);
+        if (Files.exists(localFile)) {
+            try (InputStream stream = Files.newInputStream(localFile)) {
                 baseTranslations.putAll(parseTranslationFile(stream));
             } catch (IOException e) {
                 // Failed to parse custom language file. Worth printing.
@@ -139,7 +145,10 @@ public class TranslationManager {
         if (!locale.equals(defaultLocale)) {
             baseTranslations.putAll(getTranslationMap(defaultLocale));
         }
-        Optional<Map<String, String>> langData = loadTranslationFile(locale.getLanguage() + "-" + locale.getCountry() + "/strings.json");
+        Optional<Map<String, String>> langData = Optional.empty();
+        if (!locale.getCountry().isEmpty()) {
+            langData = loadTranslationFile(locale.getLanguage() + "-" + locale.getCountry() + "/strings.json");
+        }
         if (!langData.isPresent()) {
             langData = loadTranslationFile(locale.getLanguage() + "/strings.json");
         }

@@ -17,24 +17,20 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sk89q.worldedit.util.io.file;
+package com.sk89q.worldedit.math;
 
-import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-import java.util.Optional;
+import com.sk89q.worldedit.util.test.VariedVectors;
+import org.junit.jupiter.api.DisplayName;
 
-/**
- * Something that can provide access to an archive file as a file system.
- */
-public interface ArchiveNioSupport {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    /**
-     * Try to open the given archive as a file system.
-     *
-     * @param archive the archive to open
-     * @return the path for the root of the archive, if available
-     */
-    Optional<ArchiveDir> tryOpenAsDir(Path archive) throws IOException;
+@DisplayName("A 3D block vector")
+public class BlockVector3Test {
+
+    @VariedVectors.Test(capToVanilla = true, divisionsXZ = 50, divisionsY = 50)
+    @DisplayName("survives a round-trip through long-packing")
+    void longPackingRoundTrip(BlockVector3 vec) {
+        assertEquals(vec, BlockVector3.fromLongPackedForm(vec.toLongPackedForm()));
+    }
 
 }

@@ -17,24 +17,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sk89q.worldedit.util.io.file;
+package com.sk89q.worldedit.util.io;
 
-import java.io.IOException;
-import java.nio.file.FileSystem;
+import com.sk89q.worldedit.WorldEdit;
+
 import java.nio.file.Path;
-import java.util.Optional;
 
-/**
- * Something that can provide access to an archive file as a file system.
- */
-public interface ArchiveNioSupport {
+public class WorldEditResourceLoader implements ResourceLoader {
 
-    /**
-     * Try to open the given archive as a file system.
-     *
-     * @param archive the archive to open
-     * @return the path for the root of the archive, if available
-     */
-    Optional<ArchiveDir> tryOpenAsDir(Path archive) throws IOException;
+    private final WorldEdit worldEdit;
 
+    public WorldEditResourceLoader(WorldEdit worldEdit) {
+        this.worldEdit = worldEdit;
+    }
+
+    @Override
+    public Path getLocalResource(String pathName) {
+        return this.worldEdit.getWorkingDirectoryFile(pathName).toPath();
+    }
 }

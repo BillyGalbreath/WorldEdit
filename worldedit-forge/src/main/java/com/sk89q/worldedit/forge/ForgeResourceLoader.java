@@ -17,24 +17,35 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sk89q.worldedit.util.io.file;
+package com.sk89q.worldedit.forge;
+
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.util.io.WorldEditResourceLoader;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-import java.util.Optional;
+import java.net.URL;
 
-/**
- * Something that can provide access to an archive file as a file system.
- */
-public interface ArchiveNioSupport {
+public class ForgeResourceLoader extends WorldEditResourceLoader  {
 
-    /**
-     * Try to open the given archive as a file system.
-     *
-     * @param archive the archive to open
-     * @return the path for the root of the archive, if available
-     */
-    Optional<ArchiveDir> tryOpenAsDir(Path archive) throws IOException;
+    public ForgeResourceLoader(WorldEdit worldEdit) {
+        super(worldEdit);
+    }
+
+    private static URL getResourceForgeHack(String location) throws IOException {
+        try {
+            return new URL("modjar://worldedit/" + location);
+        } catch (Exception e) {
+            throw new IOException("Could not find " + location);
+        }
+    }
+
+    @Override
+    public URL getRootResource(String pathName) throws IOException {
+        URL url = super.getRootResource(pathName);
+        if (url == null) {
+            return getResourceForgeHack(pathName);
+        }
+        return url;
+    }
 
 }
