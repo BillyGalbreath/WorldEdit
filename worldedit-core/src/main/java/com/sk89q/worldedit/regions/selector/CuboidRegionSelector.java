@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions.selector;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -39,8 +37,9 @@ import com.sk89q.worldedit.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Creates a {@code CuboidRegion} from a user's selections.
@@ -160,13 +159,13 @@ public class CuboidRegionSelector implements RegionSelector, CUIRegion {
             player.printInfo(TranslatableComponent.of(
                     "worldedit.selection.cuboid.explain.primary-area",
                     TextComponent.of(position1.toString()),
-                    TextComponent.of(region.getArea())
+                    TextComponent.of(region.getVolume())
             ));
         } else if (position1 != null) {
             player.printInfo(TranslatableComponent.of("worldedit.selection.cuboid.explain.primary", TextComponent.of(position1.toString())));
         }
 
-        session.dispatchCUIEvent(player, new SelectionPointEvent(0, pos, getArea()));
+        session.dispatchCUIEvent(player, new SelectionPointEvent(0, pos, getVolume()));
     }
 
     @Override
@@ -179,13 +178,13 @@ public class CuboidRegionSelector implements RegionSelector, CUIRegion {
             player.printInfo(TranslatableComponent.of(
                     "worldedit.selection.cuboid.explain.secondary-area",
                     TextComponent.of(position2.toString()),
-                    TextComponent.of(region.getArea())
+                    TextComponent.of(region.getVolume())
             ));
         } else if (position2 != null) {
             player.printInfo(TranslatableComponent.of("worldedit.selection.cuboid.explain.secondary", TextComponent.of(position2.toString())));
         }
 
-        session.dispatchCUIEvent(player, new SelectionPointEvent(1, pos, getArea()));
+        session.dispatchCUIEvent(player, new SelectionPointEvent(1, pos, getVolume()));
     }
 
     @Override
@@ -196,11 +195,11 @@ public class CuboidRegionSelector implements RegionSelector, CUIRegion {
         session.dispatchCUIEvent(player, new SelectionShapeEvent(getTypeID()));
 
         if (position1 != null) {
-            session.dispatchCUIEvent(player, new SelectionPointEvent(0, position1, getArea()));
+            session.dispatchCUIEvent(player, new SelectionPointEvent(0, position1, getVolume()));
         }
 
         if (position2 != null) {
-            session.dispatchCUIEvent(player, new SelectionPointEvent(1, position2, getArea()));
+            session.dispatchCUIEvent(player, new SelectionPointEvent(1, position2, getVolume()));
         }
     }
 
@@ -267,7 +266,7 @@ public class CuboidRegionSelector implements RegionSelector, CUIRegion {
     }
 
     @Override
-    public int getArea() {
+    public long getVolume() {
         if (position1 == null) {
             return -1;
         }
@@ -276,17 +275,17 @@ public class CuboidRegionSelector implements RegionSelector, CUIRegion {
             return -1;
         }
 
-        return region.getArea();
+        return region.getVolume();
     }
 
     @Override
     public void describeCUI(LocalSession session, Actor player) {
         if (position1 != null) {
-            session.dispatchCUIEvent(player, new SelectionPointEvent(0, position1, getArea()));
+            session.dispatchCUIEvent(player, new SelectionPointEvent(0, position1, getVolume()));
         }
 
         if (position2 != null) {
-            session.dispatchCUIEvent(player, new SelectionPointEvent(1, position2, getArea()));
+            session.dispatchCUIEvent(player, new SelectionPointEvent(1, position2, getVolume()));
         }
     }
 
@@ -309,5 +308,5 @@ public class CuboidRegionSelector implements RegionSelector, CUIRegion {
     public String getLegacyTypeID() {
         return "cuboid";
     }
-    
+
 }

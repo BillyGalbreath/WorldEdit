@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command;
@@ -103,20 +103,21 @@ public class GenerationCommands {
                        int height,
                    @Switch(name = 'h', desc = "Make a hollow cylinder")
                        boolean hollow) throws WorldEditException {
-        final double radiusX, radiusZ;
+        double radiusX;
+        double radiusZ;
         switch (radii.size()) {
-        case 1:
-            radiusX = radiusZ = Math.max(1, radii.get(0));
-            break;
+            case 1:
+                radiusX = radiusZ = Math.max(1, radii.get(0));
+                break;
 
-        case 2:
-            radiusX = Math.max(1, radii.get(0));
-            radiusZ = Math.max(1, radii.get(1));
-            break;
+            case 2:
+                radiusX = Math.max(1, radii.get(0));
+                radiusZ = Math.max(1, radii.get(1));
+                break;
 
-        default:
-            actor.printError(TranslatableComponent.of("worldedit.cyl.invalid-radius"));
-            return 0;
+            default:
+                actor.printError(TranslatableComponent.of("worldedit.cyl.invalid-radius"));
+                return 0;
         }
 
         worldEdit.checkMaxRadius(radiusX);
@@ -162,21 +163,23 @@ public class GenerationCommands {
                           boolean raised,
                       @Switch(name = 'h', desc = "Make a hollow sphere")
                           boolean hollow) throws WorldEditException {
-        final double radiusX, radiusY, radiusZ;
+        double radiusX;
+        double radiusY;
+        double radiusZ;
         switch (radii.size()) {
-        case 1:
-            radiusX = radiusY = radiusZ = Math.max(0, radii.get(0));
-            break;
+            case 1:
+                radiusX = radiusY = radiusZ = Math.max(0, radii.get(0));
+                break;
 
-        case 3:
-            radiusX = Math.max(0, radii.get(0));
-            radiusY = Math.max(0, radii.get(1));
-            radiusZ = Math.max(0, radii.get(2));
-            break;
+            case 3:
+                radiusX = Math.max(0, radii.get(0));
+                radiusY = Math.max(0, radii.get(1));
+                radiusZ = Math.max(0, radii.get(2));
+                break;
 
-        default:
-            actor.printError(TranslatableComponent.of("worldedit.sphere.invalid-radius"));
-            return 0;
+            default:
+                actor.printError(TranslatableComponent.of("worldedit.sphere.invalid-radius"));
+                return 0;
         }
 
         worldEdit.checkMaxRadius(radiusX);
@@ -314,9 +317,15 @@ public class GenerationCommands {
             zero = max.add(min).multiply(0.5);
             unit = max.subtract(zero);
 
-            if (unit.getX() == 0) unit = unit.withX(1.0);
-            if (unit.getY() == 0) unit = unit.withY(1.0);
-            if (unit.getZ() == 0) unit = unit.withZ(1.0);
+            if (unit.getX() == 0) {
+                unit = unit.withX(1.0);
+            }
+            if (unit.getY() == 0) {
+                unit = unit.withY(1.0);
+            }
+            if (unit.getZ() == 0) {
+                unit = unit.withZ(1.0);
+            }
         }
 
         try {
@@ -376,9 +385,15 @@ public class GenerationCommands {
             zero = max.add(min).multiply(0.5);
             unit = max.subtract(zero);
 
-            if (unit.getX() == 0) unit = unit.withX(1.0);
-            if (unit.getY() == 0) unit = unit.withY(1.0);
-            if (unit.getZ() == 0) unit = unit.withZ(1.0);
+            if (unit.getX() == 0) {
+                unit = unit.withX(1.0);
+            }
+            if (unit.getY() == 0) {
+                unit = unit.withY(1.0);
+            }
+            if (unit.getZ() == 0) {
+                unit = unit.withZ(1.0);
+            }
         }
 
         try {

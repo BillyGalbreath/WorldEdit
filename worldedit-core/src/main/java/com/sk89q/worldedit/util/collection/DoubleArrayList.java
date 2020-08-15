@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.util.collection;
@@ -33,8 +33,8 @@ import java.util.NoSuchElementException;
  */
 public class DoubleArrayList<A, B> implements Iterable<Map.Entry<A, B>> {
 
-    private List<A> listA = new ArrayList<>();
-    private List<B> listB = new ArrayList<>();
+    private final List<A> listA = new ArrayList<>();
+    private final List<B> listB = new ArrayList<>();
     private boolean isReversed = false;
 
     /**
@@ -102,8 +102,8 @@ public class DoubleArrayList<A, B> implements Iterable<Map.Entry<A, B>> {
     public class ForwardEntryIterator<T extends Map.Entry<A, B>>
             implements Iterator<Map.Entry<A, B>> {
 
-        private Iterator<A> keyIterator;
-        private Iterator<B> valueIterator;
+        private final Iterator<A> keyIterator;
+        private final Iterator<B> valueIterator;
 
         public ForwardEntryIterator(Iterator<A> keyIterator, Iterator<B> valueIterator) {
             this.keyIterator = keyIterator;
@@ -132,8 +132,8 @@ public class DoubleArrayList<A, B> implements Iterable<Map.Entry<A, B>> {
     public class ReverseEntryIterator<T extends Map.Entry<A, B>>
             implements Iterator<Map.Entry<A, B>> {
 
-        private ListIterator<A> keyIterator;
-        private ListIterator<B> valueIterator;
+        private final ListIterator<A> keyIterator;
+        private final ListIterator<B> valueIterator;
 
         public ReverseEntryIterator(ListIterator<A> keyIterator, ListIterator<B> valueIterator) {
             this.keyIterator = keyIterator;
@@ -160,8 +160,8 @@ public class DoubleArrayList<A, B> implements Iterable<Map.Entry<A, B>> {
      * Class to masquerade as Map.Entry.
      */
     public class Entry<C, D> implements Map.Entry<A, B> {
-        private A key;
-        private B value;
+        private final A key;
+        private final B value;
 
         private Entry(A key, B value) {
             this.key = key;

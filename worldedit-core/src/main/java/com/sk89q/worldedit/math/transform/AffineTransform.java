@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.math.transform;
@@ -35,23 +35,32 @@ public class AffineTransform implements Transform {
     /**
      * coefficients for x coordinate.
      */
-    private double m00, m01, m02, m03;
+    private final double m00;
+    private final double m01;
+    private final double m02;
+    private final double m03;
 
     /**
      * coefficients for y coordinate.
      */
-    private double m10, m11, m12, m13;
+    private final double m10;
+    private final double m11;
+    private final double m12;
+    private final double m13;
 
     /**
      * coefficients for z coordinate.
      */
-    private double m20, m21, m22, m23;
+    private final double m20;
+    private final double m21;
+    private final double m22;
+    private final double m23;
 
     // ===================================================================
     // constructors
 
     /**
-     * Creates a new affine transform3D set to identity
+     * Creates a new affine transform3D set to the identity.
      */
     public AffineTransform() {
         // init to identity matrix
@@ -72,6 +81,7 @@ public class AffineTransform implements Transform {
             m20 = coefs[6];
             m21 = coefs[7];
             m22 = coefs[8];
+            m03 = m13 = m23 = 0;
         } else if (coefs.length == 12) {
             m00 = coefs[0];
             m01 = coefs[1];
@@ -113,31 +123,10 @@ public class AffineTransform implements Transform {
 
     @Override
     public boolean isIdentity() {
-        if (m00 != 1)
-            return false;
-        if (m11 != 1)
-            return false;
-        if (m22 != 1)
-            return false;
-        if (m01 != 0)
-            return false;
-        if (m02 != 0)
-            return false;
-        if (m03 != 0)
-            return false;
-        if (m10 != 0)
-            return false;
-        if (m12 != 0)
-            return false;
-        if (m13 != 0)
-            return false;
-        if (m20 != 0)
-            return false;
-        if (m21 != 0)
-            return false;
-        if (m23 != 0)
-            return false;
-        return true;
+        return m00 == m11 && m11 == m22 && m22 == 1
+            && m01 == m02 && m02 == m03 && m03 == 0
+            && m10 == m12 && m12 == m13 && m13 == 0
+            && m20 == m21 && m21 == m23 && m23 == 0;
     }
 
     /**

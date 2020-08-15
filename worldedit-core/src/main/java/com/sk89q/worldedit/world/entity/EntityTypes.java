@@ -3,26 +3,31 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.entity;
 
 import javax.annotation.Nullable;
 
-public class EntityTypes {
-
+/**
+ * Stores a list of common {@link EntityType EntityTypes}.
+ *
+ * @see EntityType
+ */
+@SuppressWarnings("unused")
+public final class EntityTypes {
     @Nullable public static final EntityType AREA_EFFECT_CLOUD = get("minecraft:area_effect_cloud");
     @Nullable public static final EntityType ARMOR_STAND = get("minecraft:armor_stand");
     @Nullable public static final EntityType ARROW = get("minecraft:arrow");
@@ -63,6 +68,7 @@ public class EntityTypes {
     @Nullable public static final EntityType GHAST = get("minecraft:ghast");
     @Nullable public static final EntityType GIANT = get("minecraft:giant");
     @Nullable public static final EntityType GUARDIAN = get("minecraft:guardian");
+    @Nullable public static final EntityType HOGLIN = get("minecraft:hoglin");
     @Nullable public static final EntityType HOPPER_MINECART = get("minecraft:hopper_minecart");
     @Nullable public static final EntityType HORSE = get("minecraft:horse");
     @Nullable public static final EntityType HUSK = get("minecraft:husk");
@@ -84,6 +90,7 @@ public class EntityTypes {
     @Nullable public static final EntityType PARROT = get("minecraft:parrot");
     @Nullable public static final EntityType PHANTOM = get("minecraft:phantom");
     @Nullable public static final EntityType PIG = get("minecraft:pig");
+    @Nullable public static final EntityType PIGLIN = get("minecraft:piglin");
     @Nullable public static final EntityType PILLAGER = get("minecraft:pillager");
     @Nullable public static final EntityType PLAYER = get("minecraft:player");
     @Nullable public static final EntityType POLAR_BEAR = get("minecraft:polar_bear");
@@ -107,6 +114,7 @@ public class EntityTypes {
     @Nullable public static final EntityType SPIDER = get("minecraft:spider");
     @Nullable public static final EntityType SQUID = get("minecraft:squid");
     @Nullable public static final EntityType STRAY = get("minecraft:stray");
+    @Nullable public static final EntityType STRIDER = get("minecraft:strider");
     @Nullable public static final EntityType TNT = get("minecraft:tnt");
     @Nullable public static final EntityType TNT_MINECART = get("minecraft:tnt_minecart");
     @Nullable public static final EntityType TRADER_LLAMA = get("minecraft:trader_llama");
@@ -122,16 +130,20 @@ public class EntityTypes {
     @Nullable public static final EntityType WITHER_SKELETON = get("minecraft:wither_skeleton");
     @Nullable public static final EntityType WITHER_SKULL = get("minecraft:wither_skull");
     @Nullable public static final EntityType WOLF = get("minecraft:wolf");
+    @Nullable public static final EntityType ZOGLIN = get("minecraft:zoglin");
     @Nullable public static final EntityType ZOMBIE = get("minecraft:zombie");
     @Nullable public static final EntityType ZOMBIE_HORSE = get("minecraft:zombie_horse");
-    @Nullable public static final EntityType ZOMBIE_PIGMAN = get("minecraft:zombie_pigman");
+    @Deprecated @Nullable public static final EntityType ZOMBIE_PIGMAN = get("minecraft:zombie_pigman");
     @Nullable public static final EntityType ZOMBIE_VILLAGER = get("minecraft:zombie_villager");
+    @Nullable public static final EntityType ZOMBIFIED_PIGLIN = get("minecraft:zombified_piglin");
 
     private EntityTypes() {
     }
 
-    public static @Nullable EntityType get(final String id) {
+    /**
+     * Gets the {@link EntityType} associated with the given id.
+     */
+    public static @Nullable EntityType get(String id) {
         return EntityType.REGISTRY.get(id);
     }
-
 }

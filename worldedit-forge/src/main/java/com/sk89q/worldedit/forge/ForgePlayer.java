@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.forge;
@@ -51,7 +51,9 @@ import net.minecraft.network.play.server.SCustomPayloadPlayPacket;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -59,7 +61,6 @@ import net.minecraft.util.text.TextFormatting;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 public class ForgePlayer extends AbstractPlayerActor {
@@ -86,7 +87,7 @@ public class ForgePlayer extends AbstractPlayerActor {
 
     @Override
     public String getName() {
-        return this.player.getName().getFormattedText();
+        return this.player.getName().getUnformattedComponentText();
     }
 
     @Override
@@ -132,44 +133,53 @@ public class ForgePlayer extends AbstractPlayerActor {
         this.player.connection.sendPacket(packet);
     }
 
+    private void sendMessage(ITextComponent textComponent) {
+        this.player.func_241151_a_(textComponent, ChatType.CHAT, Util.field_240973_b_);
+    }
+
     @Override
+    @Deprecated
     public void printRaw(String msg) {
         for (String part : msg.split("\n")) {
-            this.player.sendMessage(new StringTextComponent(part));
+            sendMessage(new StringTextComponent(part));
         }
     }
 
     @Override
+    @Deprecated
     public void printDebug(String msg) {
         sendColorized(msg, TextFormatting.GRAY);
     }
 
     @Override
+    @Deprecated
     public void print(String msg) {
         sendColorized(msg, TextFormatting.LIGHT_PURPLE);
     }
 
     @Override
+    @Deprecated
     public void printError(String msg) {
         sendColorized(msg, TextFormatting.RED);
     }
 
     @Override
     public void print(Component component) {
-        this.player.sendMessage(ITextComponent.Serializer.fromJson(GsonComponentSerializer.INSTANCE.serialize(WorldEditText.format(component, getLocale()))));
+        sendMessage(ITextComponent.Serializer.func_240643_a_(GsonComponentSerializer.INSTANCE.serialize(WorldEditText.format(component, getLocale()))));
     }
 
     private void sendColorized(String msg, TextFormatting formatting) {
         for (String part : msg.split("\n")) {
             StringTextComponent component = new StringTextComponent(part);
-            component.getStyle().setColor(formatting);
-            this.player.sendMessage(component);
+            component.func_240699_a_(formatting);
+            sendMessage(component);
         }
     }
 
     @Override
-    public void setPosition(Vector3 pos, float pitch, float yaw) {
+    public boolean trySetPosition(Vector3 pos, float pitch, float yaw) {
         this.player.connection.setPlayerLocation(pos.getX(), pos.getY(), pos.getZ(), yaw, pitch);
+        return true;
     }
 
     @Override
@@ -208,7 +218,7 @@ public class ForgePlayer extends AbstractPlayerActor {
 
     @Override
     public Locale getLocale() {
-        return TextUtils.getLocaleByMinecraftTag(player.language);
+        return TextUtils.getLocaleByMinecraftTag(player.getLanguage());
     }
 
     @Override

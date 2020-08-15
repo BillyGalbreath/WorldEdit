@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 // $Id$
@@ -24,6 +24,7 @@ package com.sk89q.worldedit.bukkit;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.extension.platform.Actor;
+import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
 import org.bukkit.block.Block;
@@ -44,14 +45,14 @@ import org.enginehub.piston.inject.MapBackedValueStore;
 import java.util.Optional;
 
 /**
- * Handles all events thrown in relation to a Player
+ * Handles all events thrown in relation to a Player.
  */
 public class WorldEditListener implements Listener {
 
-    private WorldEditPlugin plugin;
+    private final WorldEditPlugin plugin;
 
     /**
-     * Construct the object;
+     * Construct the object.
      *
      * @param plugin the plugin
      */
@@ -84,7 +85,7 @@ public class WorldEditListener implements Listener {
     }
 
     /**
-     * Called when a player interacts
+     * Called when a player interacts.
      *
      * @param event Relevant event details
      */
@@ -105,13 +106,14 @@ public class WorldEditListener implements Listener {
         final Player player = plugin.wrapPlayer(event.getPlayer());
         final World world = player.getWorld();
         final WorldEdit we = plugin.getWorldEdit();
+        final Direction direction = BukkitAdapter.adapt(event.getBlockFace());
 
         Action action = event.getAction();
         if (action == Action.LEFT_CLICK_BLOCK) {
             final Block clickedBlock = event.getClickedBlock();
             final Location pos = new Location(world, clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ());
 
-            if (we.handleBlockLeftClick(player, pos)) {
+            if (we.handleBlockLeftClick(player, pos, direction)) {
                 event.setCancelled(true);
             }
 
@@ -129,7 +131,7 @@ public class WorldEditListener implements Listener {
             final Block clickedBlock = event.getClickedBlock();
             final Location pos = new Location(world, clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ());
 
-            if (we.handleBlockRightClick(player, pos)) {
+            if (we.handleBlockRightClick(player, pos, direction)) {
                 event.setCancelled(true);
             }
 

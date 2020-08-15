@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command.util;
@@ -36,9 +36,9 @@ import org.enginehub.piston.exception.CommandExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -133,6 +133,7 @@ public final class AsyncCommandBuilder<T> {
         return future;
     }
 
+    @SuppressWarnings("deprecation")
     private T runTask() {
         T result = null;
         try {
@@ -183,6 +184,7 @@ public final class AsyncCommandBuilder<T> {
     // com.sk89q.minecraft.util.commands.CommandException. the ExceptionConverter currently expects converted
     // exceptions to be org.enginehub.piston.CommandException, throw it wraps the resulting InvocationTargetException in
     // a CommandExecutionException. here, we unwrap those layers to retrieve the original WG error message
+    @SuppressWarnings("deprecation")
     private Component tryExtractOldCommandException(CommandException converted) {
         Component message = null;
         if (converted instanceof CommandExecutionException) {

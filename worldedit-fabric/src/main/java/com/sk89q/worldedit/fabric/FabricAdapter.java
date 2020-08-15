@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.fabric;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
 import com.sk89q.jnbt.CompoundTag;
@@ -45,6 +43,7 @@ import com.sk89q.worldedit.world.item.ItemTypes;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
@@ -54,13 +53,28 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biomes;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class FabricAdapter {
+
+    private static @Nullable MinecraftServer server;
+
+    private static MinecraftServer requireServer() {
+        return Objects.requireNonNull(server, "No server injected");
+    }
+
+    static void setServer(@Nullable MinecraftServer server) {
+        FabricAdapter.server = server;
+    }
 
     private FabricAdapter() {
     }
@@ -70,11 +84,16 @@ public final class FabricAdapter {
     }
 
     public static Biome adapt(BiomeType biomeType) {
-        return Registry.BIOME.get(new Identifier(biomeType.getId()));
+        return requireServer()
+            .getRegistryManager()
+            .get(Registry.BIOME_KEY)
+            .get(new Identifier(biomeType.getId()));
     }
 
     public static BiomeType adapt(Biome biome) {
-        return BiomeTypes.get(Registry.BIOME.getId(biome).toString());
+        Identifier id = requireServer().getRegistryManager().get(Registry.BIOME_KEY).getId(biome);
+        Objects.requireNonNull(id, "biome is not registered");
+        return BiomeTypes.get(id.toString());
     }
 
     public static Vector3 adapt(Vec3d vector) {
@@ -102,7 +121,10 @@ public final class FabricAdapter {
         }
     }
 
-    public static Direction adaptEnumFacing(net.minecraft.util.math.Direction face) {
+    public static Direction adaptEnumFacing(@Nullable net.minecraft.util.math.Direction face) {
+        if (face == null) {
+            return null;
+        }
         switch (face) {
             case NORTH: return Direction.NORTH;
             case SOUTH: return Direction.SOUTH;
@@ -155,6 +177,7 @@ public final class FabricAdapter {
         return props;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static net.minecraft.block.BlockState applyProperties(StateManager<Block, net.minecraft.block.BlockState> stateContainer,
                                                                   net.minecraft.block.BlockState newState, Map<Property<?>, Object> states) {
         for (Map.Entry<Property<?>, Object> state : states.entrySet()) {

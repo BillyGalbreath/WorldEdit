@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.forge.internal;
@@ -28,23 +28,25 @@ import com.sk89q.jnbt.FloatTag;
 import com.sk89q.jnbt.IntArrayTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.ListTag;
+import com.sk89q.jnbt.LongArrayTag;
 import com.sk89q.jnbt.LongTag;
 import com.sk89q.jnbt.ShortTag;
 import com.sk89q.jnbt.StringTag;
 import com.sk89q.jnbt.Tag;
 import net.minecraft.nbt.ByteArrayNBT;
+import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.DoubleNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.EndNBT;
 import net.minecraft.nbt.FloatNBT;
+import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.IntArrayNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.LongArrayNBT;
 import net.minecraft.nbt.LongNBT;
-import net.minecraft.nbt.StringNBT;
 import net.minecraft.nbt.ShortNBT;
+import net.minecraft.nbt.StringNBT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +73,9 @@ public final class NBTConverter {
 
         } else if (tag instanceof LongTag) {
             return toNative((LongTag) tag);
+
+        } else if (tag instanceof LongArrayTag) {
+            return toNative((LongArrayTag) tag);
 
         } else if (tag instanceof StringTag) {
             return toNative((StringTag) tag);
@@ -120,6 +125,10 @@ public final class NBTConverter {
         return LongNBT.valueOf(tag.getValue());
     }
 
+    public static LongArrayNBT toNative(LongArrayTag tag) {
+        return new LongArrayNBT(tag.getValue().clone());
+    }
+
     public static StringNBT toNative(StringTag tag) {
         return StringNBT.valueOf(tag.getValue());
     }
@@ -133,8 +142,7 @@ public final class NBTConverter {
     }
 
     public static ByteArrayNBT toNative(ByteArrayTag tag) {
-        byte[] value = tag.getValue();
-        return new ByteArrayNBT(Arrays.copyOf(value, value.length));
+        return new ByteArrayNBT(tag.getValue().clone());
     }
 
     public static CompoundNBT toNative(CompoundTag tag) {
@@ -169,6 +177,9 @@ public final class NBTConverter {
 
         } else if (other instanceof LongNBT) {
             return fromNative((LongNBT) other);
+
+        } else if (other instanceof LongArrayNBT) {
+            return fromNative((LongArrayNBT) other);
 
         } else if (other instanceof StringNBT) {
             return fromNative((StringNBT) other);
@@ -224,6 +235,10 @@ public final class NBTConverter {
         return new LongTag(other.getLong());
     }
 
+    public static LongArrayTag fromNative(LongArrayNBT other) {
+        return new LongArrayTag(other.getAsLongArray().clone());
+    }
+
     public static StringTag fromNative(StringNBT other) {
         return new StringTag(other.getString());
     }
@@ -237,8 +252,7 @@ public final class NBTConverter {
     }
 
     public static ByteArrayTag fromNative(ByteArrayNBT other) {
-        byte[] value = other.getByteArray();
-        return new ByteArrayTag(Arrays.copyOf(value, value.length));
+        return new ByteArrayTag(other.getByteArray().clone());
     }
 
     public static CompoundTag fromNative(CompoundNBT other) {

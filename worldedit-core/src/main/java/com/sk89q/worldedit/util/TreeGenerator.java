@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.util;
@@ -35,13 +35,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 /**
  * Tree generator.
  */
-public class TreeGenerator {
+public final class TreeGenerator {
 
     public enum TreeType {
         TREE("Oak tree", "oak", "tree", "regular"),
@@ -83,10 +82,12 @@ public class TreeGenerator {
         JUNGLE_BUSH("Jungle bush", "junglebush", "jungleshrub"),
         RED_MUSHROOM("Red mushroom", "redmushroom", "redgiantmushroom"),
         BROWN_MUSHROOM("Brown mushroom", "brownmushroom", "browngiantmushroom"),
+        CRIMSON_FUNGUS("Crimson fungus", "crimsonfungus", "rednethermushroom"),
+        WARPED_FUNGUS("Warped fungus", "warpedfungus", "greennethermushroom"),
         RANDOM_MUSHROOM("Random mushroom", "randmushroom", "randommushroom") {
             @Override
             public boolean generate(EditSession editSession, BlockVector3 pos) throws MaxChangedBlocksException {
-                TreeType[] choices = { RED_MUSHROOM, BROWN_MUSHROOM };
+                TreeType[] choices = { RED_MUSHROOM, BROWN_MUSHROOM, CRIMSON_FUNGUS, WARPED_FUNGUS };
                 return choices[TreeGenerator.RANDOM.nextInt(choices.length)].generate(editSession, pos);
             }
         },
@@ -98,6 +99,13 @@ public class TreeGenerator {
             public boolean generate(EditSession editSession, BlockVector3 pos) throws MaxChangedBlocksException {
                 makePineTree(editSession, pos);
                 return true;
+            }
+        },
+        CHORUS_PLANT("Chorus plant", "chorusplant") {
+            @Override
+            public boolean generate(EditSession editSession, BlockVector3 pos) throws MaxChangedBlocksException {
+                // chorus plants have to generate starting in the end stone itself, not the air above the ground
+                return editSession.getWorld().generateTree(this, editSession, pos.subtract(0, 1, 0));
             }
         },
         RANDOM("Random tree", "rand", "random") {
@@ -171,7 +179,7 @@ public class TreeGenerator {
 
     private static final Random RANDOM = new Random();
 
-     /**
+    /**
      * Makes a terrible looking pine tree.
      *
      * @param basePosition the base position

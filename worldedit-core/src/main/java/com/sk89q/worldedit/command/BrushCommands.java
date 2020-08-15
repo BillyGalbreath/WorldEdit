@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command;
@@ -42,9 +42,11 @@ import com.sk89q.worldedit.command.util.CreatureButcher;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.function.Contextual;
-import com.sk89q.worldedit.function.factory.Apply;
+import com.sk89q.worldedit.function.factory.ApplyLayer;
+import com.sk89q.worldedit.function.factory.ApplyRegion;
 import com.sk89q.worldedit.function.factory.Deform;
 import com.sk89q.worldedit.function.factory.Paint;
+import com.sk89q.worldedit.function.factory.Snow;
 import com.sk89q.worldedit.function.mask.BlockTypeMask;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.operation.Operation;
@@ -52,6 +54,7 @@ import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.internal.annotation.ClipboardMask;
 import com.sk89q.worldedit.internal.annotation.VertHeight;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.factory.CylinderRegionFactory;
 import com.sk89q.worldedit.regions.factory.RegionFactory;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.session.request.RequestExtent;
@@ -249,9 +252,9 @@ public class BrushCommands {
                                  double radius,
                              @ArgFlag(
                                  name = 'h',
-                                 desc = "Affect blocks between the given height, " +
-                                     "upwards and downwards, " +
-                                     "rather than the target location Y + radius",
+                                 desc = "Affect blocks between the given height, "
+                                     + "upwards and downwards, "
+                                     + "rather than the target location Y + radius",
                                  def = HeightConverter.DEFAULT_VALUE
                              )
                              @VertHeight
@@ -305,14 +308,14 @@ public class BrushCommands {
         }
 
         CreatureButcher flags = new CreatureButcher(player);
-        flags.or(CreatureButcher.Flags.FRIENDLY      , killFriendly); // No permission check here. Flags will instead be filtered by the subsequent calls.
-        flags.or(CreatureButcher.Flags.PETS          , killPets, "worldedit.butcher.pets");
-        flags.or(CreatureButcher.Flags.NPCS          , killNpcs, "worldedit.butcher.npcs");
-        flags.or(CreatureButcher.Flags.GOLEMS        , killGolems, "worldedit.butcher.golems");
-        flags.or(CreatureButcher.Flags.ANIMALS       , killAnimals, "worldedit.butcher.animals");
-        flags.or(CreatureButcher.Flags.AMBIENT       , killAmbient, "worldedit.butcher.ambient");
-        flags.or(CreatureButcher.Flags.TAGGED        , killWithName, "worldedit.butcher.tagged");
-        flags.or(CreatureButcher.Flags.ARMOR_STAND   , killArmorStands, "worldedit.butcher.armorstands");
+        flags.or(CreatureButcher.Flags.FRIENDLY, killFriendly); // No permission check here. Flags will instead be filtered by the subsequent calls.
+        flags.or(CreatureButcher.Flags.PETS, killPets, "worldedit.butcher.pets");
+        flags.or(CreatureButcher.Flags.NPCS, killNpcs, "worldedit.butcher.npcs");
+        flags.or(CreatureButcher.Flags.GOLEMS, killGolems, "worldedit.butcher.golems");
+        flags.or(CreatureButcher.Flags.ANIMALS, killAnimals, "worldedit.butcher.animals");
+        flags.or(CreatureButcher.Flags.AMBIENT, killAmbient, "worldedit.butcher.ambient");
+        flags.or(CreatureButcher.Flags.TAGGED, killWithName, "worldedit.butcher.tagged");
+        flags.or(CreatureButcher.Flags.ARMOR_STAND, killArmorStands, "worldedit.butcher.armorstands");
 
         BrushTool tool = session.getBrushTool(player.getItemInHand(HandSide.MAIN_HAND).getType());
         tool.setSize(radius);
@@ -361,7 +364,7 @@ public class BrushCommands {
                     @Arg(desc = "The pattern of blocks to set")
                         Pattern pattern) throws WorldEditException {
         setOperationBasedBrush(player, localSession, radius,
-            new Apply(new ReplaceFactory(pattern)), shape, "worldedit.brush.set");
+            new ApplyRegion(new ReplaceFactory(pattern)), shape, "worldedit.brush.set");
     }
 
     @Command(
@@ -408,6 +411,27 @@ public class BrushCommands {
                           double radius) throws WorldEditException {
         setOperationBasedBrush(player, localSession, radius,
             new Deform("y+=1"), shape, "worldedit.brush.lower");
+    }
+
+    @Command(
+        name = "snow",
+        desc = "Snow brush, sets snow in the area"
+    )
+    @CommandPermissions("worldedit.brush.snow")
+    public void snow(Player player, LocalSession localSession,
+                     @Arg(desc = "The shape of the region")
+                         RegionFactory shape,
+                     @Arg(desc = "The size of the brush", def = "5")
+                         double radius,
+                     @Switch(name = 's', desc = "Whether to stack snow")
+                         boolean stack) throws WorldEditException {
+
+        if (shape instanceof CylinderRegionFactory) {
+            shape = new CylinderRegionFactory(radius);
+        }
+
+        setOperationBasedBrush(player, localSession, radius,
+            new ApplyLayer(new Snow(stack)), shape, "worldedit.brush.snow");
     }
 
     static void setOperationBasedBrush(Player player, LocalSession session, double radius,

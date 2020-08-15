@@ -3,24 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.function.operation;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -29,23 +26,18 @@ import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.entity.metadata.EntityProperties;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.function.CombinedRegionFunction;
-import com.sk89q.worldedit.function.FlatRegionFunction;
-import com.sk89q.worldedit.function.FlatRegionMaskingFilter;
 import com.sk89q.worldedit.function.RegionFunction;
 import com.sk89q.worldedit.function.RegionMaskingFilter;
 import com.sk89q.worldedit.function.biome.ExtentBiomeCopy;
 import com.sk89q.worldedit.function.block.ExtentBlockCopy;
 import com.sk89q.worldedit.function.entity.ExtentEntityCopy;
 import com.sk89q.worldedit.function.mask.Mask;
-import com.sk89q.worldedit.function.mask.Mask2D;
 import com.sk89q.worldedit.function.mask.Masks;
 import com.sk89q.worldedit.function.visitor.EntityVisitor;
-import com.sk89q.worldedit.function.visitor.FlatRegionVisitor;
 import com.sk89q.worldedit.function.visitor.RegionVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.Identity;
 import com.sk89q.worldedit.math.transform.Transform;
-import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
@@ -53,6 +45,9 @@ import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Makes a copy of a portion of one extent to another extent or another point.
@@ -78,7 +73,7 @@ public class ForwardExtentCopy implements Operation {
     private Transform currentTransform = null;
 
     private RegionVisitor lastVisitor;
-    private FlatRegionVisitor lastBiomeVisitor;
+    private RegionVisitor lastBiomeVisitor;
     private EntityVisitor lastEntityVisitor;
 
     private int affectedBlocks;
@@ -255,9 +250,6 @@ public class ForwardExtentCopy implements Operation {
      * @param copyingBiomes true if copying
      */
     public void setCopyingBiomes(boolean copyingBiomes) {
-        if (copyingBiomes && !(region instanceof FlatRegion)) {
-            throw new UnsupportedOperationException("Can't copy biomes from region that doesn't implement FlatRegion");
-        }
         this.copyingBiomes = copyingBiomes;
     }
 
@@ -307,13 +299,12 @@ public class ForwardExtentCopy implements Operation {
 
             List<Operation> ops = Lists.newArrayList(blockVisitor);
 
-            if (copyingBiomes && region instanceof FlatRegion) { // double-check here even though we checked before
-                ExtentBiomeCopy biomeCopy = new ExtentBiomeCopy(source, from.toBlockVector2(),
-                        destination, to.toBlockVector2(), currentTransform);
-                Mask2D biomeMask = sourceMask.toMask2D();
-                FlatRegionFunction biomeFunction = biomeMask == null ? biomeCopy
-                        : new FlatRegionMaskingFilter(biomeMask, biomeCopy);
-                FlatRegionVisitor biomeVisitor = new FlatRegionVisitor(((FlatRegion) region), biomeFunction);
+            if (copyingBiomes) {
+                ExtentBiomeCopy biomeCopy = new ExtentBiomeCopy(source, from,
+                        destination, to, currentTransform);
+                RegionFunction biomeFunction = sourceFunction == null ? biomeCopy
+                        : new RegionMaskingFilter(sourceMask, biomeCopy);
+                RegionVisitor biomeVisitor = new RegionVisitor(region, biomeFunction);
                 ops.add(biomeVisitor);
                 lastBiomeVisitor = biomeVisitor;
             }

@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.util.yaml;
@@ -110,10 +110,10 @@ public class YAMLProcessor extends YAMLNode {
      * @throws java.io.IOException on load error
      */
     public void load() throws IOException {
-
         try (InputStream stream = getInputStream()) {
-            if (stream == null)
+            if (stream == null) {
                 throw new IOException("Stream is null!");
+            }
             read(yaml.load(new UnicodeReader(stream)));
         } catch (YAMLProcessorException e) {
             root = new LinkedHashMap<>();
@@ -172,8 +172,9 @@ public class YAMLProcessor extends YAMLNode {
             parent.mkdirs();
         }
         try (OutputStream stream = getOutputStream()) {
-            if (stream == null)
+            if (stream == null) {
                 return false;
+            }
             OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
             if (header != null) {
                 writer.append(header);
@@ -247,7 +248,7 @@ public class YAMLProcessor extends YAMLNode {
      *
      * @param key the property key
      * @param comment the comment. May be {@code null}, in which case the comment
-     *   is removed.
+     *      is removed.
      */
     public void setComment(String key, String... comment) {
         if (comment != null && comment.length > 0) {
@@ -285,10 +286,11 @@ public class YAMLProcessor extends YAMLNode {
     }
 
     /**
-     * This method returns an empty ConfigurationNode for using as a
-     * default in methods that select a node from a node list.
+     * Get an empty ConfigurationNode for using as a default in methods that
+     * select a node from a node list.
      *
-     * @param writeDefaults true to write default values when a property is requested that doesn't exist
+     * @param writeDefaults true to write default values when a property is
+     *      requested that doesn't exist
      * @return a node
      */
     public static YAMLNode getEmptyNode(boolean writeDefaults) {

@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.math;
@@ -37,8 +37,10 @@ public final class BlockVector2 {
      * A comparator for BlockVector2ds that orders the vectors by rows, with x as the
      * column and z as the row.
      *
+     * <p>
      * For example, if x is the horizontal axis and z is the vertical axis, it
      * sorts like so:
+     * </p>
      *
      * <pre>
      * 0123
@@ -66,11 +68,14 @@ public final class BlockVector2 {
                     return ONE;
                 }
                 break;
+            default:
+                break;
         }
         return new BlockVector2(x, z);
     }
 
-    private final int x, z;
+    private final int x;
+    private final int z;
 
     /**
      * Construct an instance.
@@ -168,7 +173,8 @@ public final class BlockVector2 {
      * @return a new vector
      */
     public BlockVector2 add(BlockVector2... others) {
-        int newX = x, newZ = z;
+        int newX = x;
+        int newZ = z;
 
         for (BlockVector2 other : others) {
             newX += other.x;
@@ -209,7 +215,8 @@ public final class BlockVector2 {
      * @return a new vector
      */
     public BlockVector2 subtract(BlockVector2... others) {
-        int newX = x, newZ = z;
+        int newX = x;
+        int newZ = z;
 
         for (BlockVector2 other : others) {
             newX -= other.x;
@@ -247,7 +254,8 @@ public final class BlockVector2 {
      * @return a new vector
      */
     public BlockVector2 multiply(BlockVector2... others) {
-        int newX = x, newZ = z;
+        int newX = x;
+        int newZ = z;
 
         for (BlockVector2 other : others) {
             newX *= other.x;

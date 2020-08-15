@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.storage;
@@ -30,12 +30,12 @@ import java.util.regex.Pattern;
 
 public class FileMcRegionChunkStore extends McRegionChunkStore {
 
-    private File path;
+    private final File path;
 
     /**
      * Create an instance. The passed path is the folder to read the
      * chunk files from.
-     * 
+     *
      * @param path a path
      */
     public FileMcRegionChunkStore(File path) {
@@ -62,7 +62,9 @@ public class FileMcRegionChunkStore extends McRegionChunkStore {
         }
 
         try {
-            if (file == null) throw new FileNotFoundException();
+            if (file == null) {
+                throw new FileNotFoundException();
+            }
             return new FileInputStream(file);
         } catch (FileNotFoundException e) {
             throw new MissingChunkException();
@@ -71,8 +73,8 @@ public class FileMcRegionChunkStore extends McRegionChunkStore {
 
     @Override
     public boolean isValid() {
-        return new File(path, "region").isDirectory() ||
-                new File(path, "DIM-1" + File.separator + "region").isDirectory();
+        return new File(path, "region").isDirectory()
+            || new File(path, "DIM-1" + File.separator + "region").isDirectory();
     }
 
 }

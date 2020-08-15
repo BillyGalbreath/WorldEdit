@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command;
@@ -49,7 +49,6 @@ import org.enginehub.piston.annotation.CommandContainer;
 import org.enginehub.piston.annotation.param.ArgFlag;
 import org.enginehub.piston.exception.StopExecutionException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -101,8 +100,11 @@ public class ChunkCommands {
         final Region region = session.getSelection(world);
 
         WorldEditAsyncCommandBuilder.createAndSendMessage(actor,
-                () -> new ChunkListPaginationBox(region).create(page),
-                TranslatableComponent.of("worldedit.listchunks.listfor", TextComponent.of(actor.getName())));
+            () -> new ChunkListPaginationBox(region).create(page),
+            TranslatableComponent.of(
+                "worldedit.listchunks.listfor",
+                TextComponent.of(actor.getName())
+            ));
     }
 
     @Command(
@@ -119,12 +121,11 @@ public class ChunkCommands {
             throw new StopExecutionException(TextComponent.of("Couldn't find world folder for this world."));
         }
 
-        File chunkFile = worldEdit.getWorkingDirectoryFile(DELCHUNKS_FILE_NAME);
-        Path chunkPath = chunkFile.toPath();
+        Path chunkPath = worldEdit.getWorkingDirectoryPath(DELCHUNKS_FILE_NAME);
         ChunkDeletionInfo currentInfo = null;
         if (Files.exists(chunkPath)) {
             try {
-                currentInfo = ChunkDeleter.readInfo(chunkFile.toPath());
+                currentInfo = ChunkDeleter.readInfo(chunkPath);
             } catch (IOException e) {
                 throw new StopExecutionException(TextComponent.of("Error reading existing chunk file."));
             }
@@ -162,11 +163,15 @@ public class ChunkCommands {
             throw new StopExecutionException(TextComponent.of("Failed to write chunk list: " + e.getMessage()));
         }
 
-        actor.print(String.format("%d chunk(s) have been marked for deletion the next time the server starts.",
-                newBatch.getChunkCount()));
+        actor.print(TextComponent.of(
+            String.format("%d chunk(s) have been marked for deletion the next time the server starts.",
+                newBatch.getChunkCount())
+        ));
         if (currentInfo.batches.size() > 1) {
-            actor.printDebug(String.format("%d chunks total marked for deletion. (May have overlaps).",
-                    currentInfo.batches.stream().mapToInt(ChunkDeletionInfo.ChunkBatch::getChunkCount).sum()));
+            actor.printDebug(TextComponent.of(
+                String.format("%d chunks total marked for deletion. (May have overlaps).",
+                    currentInfo.batches.stream().mapToInt(ChunkDeletionInfo.ChunkBatch::getChunkCount).sum())
+            ));
         }
         actor.print(TextComponent.of("You can mark more chunks for deletion, or to stop now, run: ", TextColor.LIGHT_PURPLE)
                 .append(TextComponent.of("/stop", TextColor.AQUA)

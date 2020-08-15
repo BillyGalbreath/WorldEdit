@@ -22,15 +22,17 @@ configurations.all {
 dependencies {
     "api"(project(":worldedit-core"))
     "api"(project(":worldedit-libs:bukkit"))
-    "api"("org.bukkit:bukkit:1.13.2-R0.1-SNAPSHOT") {
+    "api"("org.spigotmc:spigot-api:1.16.1-R0.1-SNAPSHOT") {
         exclude("junit", "junit")
     }
-    "compileOnly"("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT")
+    "compileOnly"("org.jetbrains:annotations:19.0.0")
+    "compileOnly"("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
     "implementation"("io.papermc:paperlib:1.0.2")
     "compileOnly"("com.sk89q:dummypermscompat:1.10")
     "implementation"("org.apache.logging.log4j:log4j-slf4j-impl:2.8.1")
     "implementation"("org.bstats:bstats-bukkit:1.7")
-    "testCompile"("org.mockito:mockito-core:1.9.0-rc1")
+    "implementation"("it.unimi.dsi:fastutil:${Versions.FAST_UTIL}")
+    "testImplementation"("org.mockito:mockito-core:1.9.0-rc1")
 }
 
 tasks.named<Copy>("processResources") {

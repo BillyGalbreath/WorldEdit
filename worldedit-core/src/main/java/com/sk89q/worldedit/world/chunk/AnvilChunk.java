@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.chunk;
@@ -35,21 +35,21 @@ import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldedit.world.registry.LegacyMapper;
 import com.sk89q.worldedit.world.storage.InvalidFormatException;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class AnvilChunk implements Chunk {
 
-    private CompoundTag rootTag;
-    private byte[][] blocks;
-    private byte[][] blocksAdd;
-    private byte[][] data;
-    private int rootX;
-    private int rootZ;
+    private final CompoundTag rootTag;
+    private final byte[][] blocks;
+    private final byte[][] blocksAdd;
+    private final byte[][] data;
+    private final int rootX;
+    private final int rootZ;
 
-    private Map<BlockVector3, Map<String,Tag>> tileEntities;
+    private Map<BlockVector3, Map<String, Tag>> tileEntities;
 
     /**
      * Construct the chunk with a compound tag.
@@ -177,8 +177,6 @@ public class AnvilChunk implements Chunk {
 
     /**
      * Used to load the tile entities.
-     *
-     * @throws DataException
      */
     private void populateTileEntities() throws DataException {
         List<Tag> tags = NBTUtils.getChildTag(rootTag.getValue(),
@@ -215,6 +213,8 @@ public class AnvilChunk implements Chunk {
                         if (entry.getValue() instanceof IntTag) {
                             z = ((IntTag) entry.getValue()).getValue();
                         }
+                        break;
+                    default:
                         break;
                 }
 

@@ -1,7 +1,7 @@
-import net.minecrell.gradle.licenser.LicenseExtension
-import org.gradle.plugins.ide.idea.model.IdeaModel
 import com.mendhak.gradlecrowdin.DownloadTranslationsTask
 import com.mendhak.gradlecrowdin.UploadSourceFileTask
+import net.minecrell.gradle.licenser.LicenseExtension
+import org.gradle.plugins.ide.idea.model.IdeaModel
 
 plugins {
     id("java-library")
@@ -20,16 +20,16 @@ configurations.all {
 }
 
 dependencies {
-    "compile"(project(":worldedit-libs:core"))
-    "compile"("de.schlichtherle:truezip:6.8.3")
-    "compile"("net.java.truevfs:truevfs-profile-default_2.13:0.12.1")
-    "compile"("org.mozilla:rhino-runtime:1.7.12")
-    "compile"("org.yaml:snakeyaml:1.9")
-    "compile"("com.google.guava:guava:21.0")
-    "compile"("com.google.code.findbugs:jsr305:1.3.9")
-    "compile"("com.google.code.gson:gson:2.8.0")
-    "compile"("org.slf4j:slf4j-api:1.7.26")
-    "compile"("it.unimi.dsi:fastutil:8.2.1")
+    "api"(project(":worldedit-libs:core"))
+    "implementation"("de.schlichtherle:truezip:6.8.3")
+    "implementation"("net.java.truevfs:truevfs-profile-default_2.13:0.12.1")
+    "implementation"("org.mozilla:rhino-runtime:1.7.12")
+    "implementation"("org.yaml:snakeyaml:1.9")
+    "implementation"("com.google.guava:guava:${Versions.GUAVA}")
+    "implementation"("com.google.code.findbugs:jsr305:1.3.9")
+    "implementation"("com.google.code.gson:gson:${Versions.GSON}")
+    "implementation"("org.slf4j:slf4j-api:1.7.26")
+    "implementation"("it.unimi.dsi:fastutil:${Versions.FAST_UTIL}")
 
     val antlrVersion = "4.7.2"
     "antlr"("org.antlr:antlr4:$antlrVersion")
@@ -83,20 +83,20 @@ plugins.withId("idea") {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir("src/main/java")
-            srcDir("src/legacy/java")
-        }
-        resources {
-            srcDir("src/main/resources")
-        }
+sourceSets.named("main") {
+    java {
+        srcDir("src/main/java")
+        srcDir("src/legacy/java")
+    }
+    resources {
+        srcDir("src/main/resources")
     }
 }
 
-val crowdinApiKey = "crowdin_apikey"
+val i18nSource = file("src/main/resources/lang/strings.json")
+val processResources = tasks.named<Copy>("processResources")
 
+val crowdinApiKey = "crowdin_apikey"
 if (project.hasProperty(crowdinApiKey) && !gradle.startParameter.isOffline) {
     tasks.named<UploadSourceFileTask>("crowdinUpload") {
         apiKey = "${project.property(crowdinApiKey)}"
@@ -104,7 +104,7 @@ if (project.hasProperty(crowdinApiKey) && !gradle.startParameter.isOffline) {
         files = arrayOf(
             object {
                 var name = "strings.json"
-                var source = "${file("src/main/resources/lang/strings.json")}"
+                var source = "$i18nSource"
             }
         )
     }
@@ -115,14 +115,26 @@ if (project.hasProperty(crowdinApiKey) && !gradle.startParameter.isOffline) {
         projectId = "worldedit-core"
     }
 
-    tasks.named<Copy>("processResources") {
+    processResources.configure {
         dependsOn(dlTranslationsTask)
-        from(dlTranslationsTask.get().destination) {
+        from(dlTranslationsTask.map { it.destination }) {
             into("lang")
         }
     }
 
-    tasks.named("classes").configure {
+    tasks.named("classes") {
         dependsOn("crowdinDownload")
     }
+}
+
+// allow checking of the source file even without the API key
+val checkTranslationFiles by tasks.registering(TranslationFileCheck::class) {
+    dependsOn(processResources)
+    sourceFile.set(i18nSource)
+    translationFiles.from(fileTree(processResources.map { it.destinationDir }) {
+        include("**/lang/**/*.json")
+    })
+}
+tasks.named("check") {
+    dependsOn(checkTranslationFiles)
 }

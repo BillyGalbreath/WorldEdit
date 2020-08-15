@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.history.change;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.extent.Extent;
@@ -27,13 +25,17 @@ import com.sk89q.worldedit.history.UndoContext;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.world.biome.BiomeType;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Represents a biome change that may be undone or replayed.
  *
  * <p>This biome change does not have an {@link Extent} assigned to it because
  * one will be taken from the passed {@link UndoContext}. If the context
  * does not have an extent (it is null), cryptic errors may occur.</p>
+ * @deprecated use {@link BiomeChange3D}
  */
+@Deprecated
 public class BiomeChange implements Change {
 
     private final BlockVector2 position;
@@ -85,12 +87,12 @@ public class BiomeChange implements Change {
 
     @Override
     public void undo(UndoContext context) throws WorldEditException {
-        checkNotNull(context.getExtent()).setBiome(position, previous);
+        checkNotNull(context.getExtent()).setBiome(position.toBlockVector3(), previous);
     }
 
     @Override
     public void redo(UndoContext context) throws WorldEditException {
-        checkNotNull(context.getExtent()).setBiome(position, current);
+        checkNotNull(context.getExtent()).setBiome(position.toBlockVector3(), current);
     }
 
 }

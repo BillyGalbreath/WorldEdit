@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.forge;
@@ -46,19 +46,22 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.IProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -72,14 +75,22 @@ public final class ForgeAdapter {
     }
 
     public static Biome adapt(BiomeType biomeType) {
-        return ForgeRegistries.BIOMES.getValue(new ResourceLocation(biomeType.getId()));
+        return ServerLifecycleHooks.getCurrentServer()
+            .func_244267_aX()
+            .func_243612_b(Registry.field_239720_u_)
+            .getOrDefault(new ResourceLocation(biomeType.getId()));
     }
 
     public static BiomeType adapt(Biome biome) {
-        return BiomeTypes.get(biome.getRegistryName().toString());
+        ResourceLocation id = ServerLifecycleHooks.getCurrentServer()
+            .func_244267_aX()
+            .func_243612_b(Registry.field_239720_u_)
+            .getKey(biome);
+        Objects.requireNonNull(id, "biome is not registered");
+        return BiomeTypes.get(id.toString());
     }
 
-    public static Vector3 adapt(Vec3d vector) {
+    public static Vector3 adapt(Vector3d vector) {
         return Vector3.at(vector.x, vector.y, vector.z);
     }
 
@@ -87,8 +98,8 @@ public final class ForgeAdapter {
         return BlockVector3.at(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public static Vec3d toVec3(BlockVector3 vector) {
-        return new Vec3d(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+    public static Vector3d toVec3(BlockVector3 vector) {
+        return new Vector3d(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
     }
 
     public static net.minecraft.util.Direction adapt(Direction face) {
@@ -104,7 +115,10 @@ public final class ForgeAdapter {
         }
     }
 
-    public static Direction adaptEnumFacing(net.minecraft.util.Direction face) {
+    public static Direction adaptEnumFacing(@Nullable net.minecraft.util.Direction face) {
+        if (face == null) {
+            return null;
+        }
         switch (face) {
             case NORTH: return Direction.NORTH;
             case SOUTH: return Direction.SOUTH;
@@ -121,7 +135,7 @@ public final class ForgeAdapter {
         return new BlockPos(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
     }
 
-    public static Property<?> adaptProperty(IProperty<?> property) {
+    public static Property<?> adaptProperty(net.minecraft.state.Property<?> property) {
         if (property instanceof net.minecraft.state.BooleanProperty) {
             return new BooleanProperty(property.getName(), ImmutableList.copyOf(((net.minecraft.state.BooleanProperty) property).getAllowedValues()));
         }
@@ -136,30 +150,33 @@ public final class ForgeAdapter {
         if (property instanceof net.minecraft.state.EnumProperty) {
             // Note: do not make x.getName a method reference.
             // It will cause runtime bootstrap exceptions.
+            // Temporary: func_176610_l == getName
+            //noinspection Convert2MethodRef
             return new EnumProperty(property.getName(), ((net.minecraft.state.EnumProperty<?>) property).getAllowedValues().stream()
-                    .map(x -> x.getName())
+                    .map(x -> x.func_176610_l())
                     .collect(Collectors.toList()));
         }
         return new IPropertyAdapter<>(property);
     }
 
-    public static Map<Property<?>, Object> adaptProperties(BlockType block, Map<IProperty<?>, Comparable<?>> mcProps) {
+    public static Map<Property<?>, Object> adaptProperties(BlockType block, Map<net.minecraft.state.Property<?>, Comparable<?>> mcProps) {
         Map<Property<?>, Object> props = new TreeMap<>(Comparator.comparing(Property::getName));
-        for (Map.Entry<IProperty<?>, Comparable<?>> prop : mcProps.entrySet()) {
+        for (Map.Entry<net.minecraft.state.Property<?>, Comparable<?>> prop : mcProps.entrySet()) {
             Object value = prop.getValue();
             if (prop.getKey() instanceof DirectionProperty) {
                 value = adaptEnumFacing((net.minecraft.util.Direction) value);
             } else if (prop.getKey() instanceof net.minecraft.state.EnumProperty) {
-                value = ((IStringSerializable) value).getName();
+                value = ((IStringSerializable) value).func_176610_l();
             }
             props.put(block.getProperty(prop.getKey().getName()), value);
         }
         return props;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static net.minecraft.block.BlockState applyProperties(StateContainer<Block, net.minecraft.block.BlockState> stateContainer, net.minecraft.block.BlockState newState, Map<Property<?>, Object> states) {
         for (Map.Entry<Property<?>, Object> state : states.entrySet()) {
-            IProperty property = stateContainer.getProperty(state.getKey().getName());
+            net.minecraft.state.Property property = stateContainer.getProperty(state.getKey().getName());
             Comparable value = (Comparable) state.getValue();
             // we may need to adapt this value, depending on the source prop
             if (property instanceof DirectionProperty) {

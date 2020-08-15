@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.internal.wna;
@@ -110,7 +110,9 @@ public interface WorldNativeAccess<NC, NBS, NP> {
     /**
      * Receive the current side-effect set from the high level call.
      *
+     * <p>
      * This allows the implementation to branch on the side-effects internally.
+     * </p>
      *
      * @param sideEffectSet the set of side-effects
      */
@@ -144,14 +146,16 @@ public interface WorldNativeAccess<NC, NBS, NP> {
 
     void notifyNeighbors(NP pos, NBS oldState, NBS newState);
 
-    void updateNeighbors(NP pos, NBS oldState, NBS newState);
+    void updateNeighbors(NP pos, NBS oldState, NBS newState, int recursionLimit);
 
     void onBlockStateChange(NP pos, NBS oldState, NBS newState);
 
     /**
-     * This is a heavily modified function stripped from MC to apply worldedit-modifications.
+     * This is a heavily modified function stripped from MC to apply WorldEdit-modifications.
      *
+     * <p>
      * See Forge's World.markAndNotifyBlock
+     * </p>
      */
     default void markAndNotifyBlock(NP pos, NC chunk, NBS oldState, NBS newState, SideEffectSet sideEffectSet) {
         NBS blockState1 = getBlockState(chunk, pos);
@@ -175,9 +179,10 @@ public interface WorldNativeAccess<NC, NBS, NP> {
 
         // Make connection updates optional
         if (sideEffectSet.shouldApply(SideEffect.VALIDATION)) {
-            updateNeighbors(pos, oldState, newState);
+            updateNeighbors(pos, oldState, newState, 512);
         }
 
+        // Seems used only for PoI updates
         onBlockStateChange(pos, oldState, newState);
     }
 

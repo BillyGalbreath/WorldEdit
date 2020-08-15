@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command.argument;
@@ -25,9 +25,9 @@ import com.google.common.collect.ImmutableSet;
 import com.sk89q.worldedit.UnknownDirectionException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.internal.annotation.Direction;
 import com.sk89q.worldedit.internal.annotation.MultiDirection;
+import com.sk89q.worldedit.internal.annotation.OptionalArg;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import org.enginehub.piston.CommandManager;
@@ -38,8 +38,8 @@ import org.enginehub.piston.converter.SuccessfulConversion;
 import org.enginehub.piston.inject.InjectedValueAccess;
 import org.enginehub.piston.inject.Key;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import javax.annotation.Nullable;
 
 import static org.enginehub.piston.converter.SuggestionHelper.limitByPrefix;
 
@@ -56,14 +56,14 @@ public abstract class AbstractDirectionConverter<D> implements ArgumentConverter
     }
 
     protected static <D> void register(CommandManager commandManager, AbstractDirectionConverter<D> converter,
-                                   Class<D> keyClass, boolean includeDiagonals) {
+                                       Class<D> keyClass, boolean includeDiagonals) {
         commandManager.registerConverter(
-                Key.of(keyClass, direction(includeDiagonals)),
-                converter
+            Key.of(keyClass, direction(includeDiagonals)),
+            converter
         );
         commandManager.registerConverter(
-                Key.of(keyClass, multiDirection(includeDiagonals)),
-                CommaSeparatedValuesConverter.wrap(converter)
+            Key.of(keyClass, multiDirection(includeDiagonals)),
+            CommaSeparatedValuesConverter.wrap(converter)
         );
     }
 
@@ -93,8 +93,8 @@ public abstract class AbstractDirectionConverter<D> implements ArgumentConverter
 
     @Override
     public ConversionResult<D> convert(String argument, InjectedValueAccess context) {
-        Player player = context.injectedValue(Key.of(Actor.class))
-                .filter(Player.class::isInstance).map(Player.class::cast).orElse(null);
+        Player player = context.injectedValue(Key.of(Player.class, OptionalArg.class))
+            .orElse(null);
         try {
             return SuccessfulConversion.fromSingle(convertDirection(argument, player, includeDiagonals));
         } catch (Exception e) {

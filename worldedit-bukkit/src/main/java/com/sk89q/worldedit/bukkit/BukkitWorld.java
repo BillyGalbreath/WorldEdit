@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.bukkit;
@@ -23,11 +23,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseItem;
 import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.bukkit.adapter.BukkitImplAdapter;
 import com.sk89q.worldedit.entity.BaseEntity;
+import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.internal.wna.WorldNativeAccess;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -38,6 +38,7 @@ import com.sk89q.worldedit.util.SideEffect;
 import com.sk89q.worldedit.util.SideEffectSet;
 import com.sk89q.worldedit.util.TreeGenerator;
 import com.sk89q.worldedit.world.AbstractWorld;
+import com.sk89q.worldedit.world.RegenOptions;
 import com.sk89q.worldedit.world.biome.BiomeType;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
@@ -55,7 +56,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -72,11 +73,25 @@ public class BukkitWorld extends AbstractWorld {
 
     private static final Logger logger = WorldEdit.logger;
 
+    private static final boolean HAS_3D_BIOMES;
+
     private static final Map<Integer, Effect> effects = new HashMap<>();
+
     static {
         for (Effect effect : Effect.values()) {
-            effects.put(effect.getId(), effect);
+            @SuppressWarnings("deprecation")
+            int id = effect.getId();
+            effects.put(id, effect);
         }
+
+        boolean temp;
+        try {
+            World.class.getMethod("getBiome", int.class, int.class, int.class);
+            temp = true;
+        } catch (NoSuchMethodException e) {
+            temp = false;
+        }
+        HAS_3D_BIOMES = temp;
     }
 
     private final WeakReference<World> worldRef;
@@ -154,19 +169,6 @@ public class BukkitWorld extends AbstractWorld {
         return checkNotNull(worldRef.get(), "The world was unloaded and the reference is unavailable");
     }
 
-    /**
-     * Get the world handle.
-     *
-     * @return the world
-     */
-    protected World getWorldChecked() throws WorldEditException {
-        World world = worldRef.get();
-        if (world == null) {
-            throw new WorldUnloadedException();
-        }
-        return world;
-    }
-
     @Override
     public String getName() {
         return getWorld().getName();
@@ -179,7 +181,16 @@ public class BukkitWorld extends AbstractWorld {
 
     @Override
     public Path getStoragePath() {
-        return getWorld().getWorldFolder().toPath();
+        Path worldFolder = getWorld().getWorldFolder().toPath();
+        switch (getWorld().getEnvironment()) {
+            case NETHER:
+                return worldFolder.resolve("DIM-1");
+            case THE_END:
+                return worldFolder.resolve("DIM1");
+            case NORMAL:
+            default:
+                return worldFolder;
+        }
     }
 
     @Override
@@ -188,11 +199,11 @@ public class BukkitWorld extends AbstractWorld {
     }
 
     @Override
-    public boolean regenerate(Region region, EditSession editSession) {
+    public boolean regenerate(Region region, Extent extent, RegenOptions options) {
         BukkitImplAdapter adapter = WorldEditPlugin.getInstance().getBukkitImplAdapter();
         try {
             if (adapter != null) {
-                return adapter.regenerate(getWorld(), region, editSession);
+                return adapter.regenerate(getWorld(), region, extent, options);
             } else {
                 throw new UnsupportedOperationException("Missing BukkitImplAdapater for this version.");
             }
@@ -248,7 +259,7 @@ public class BukkitWorld extends AbstractWorld {
     }
 
     /**
-     * An EnumMap that stores which WorldEdit TreeTypes apply to which Bukkit TreeTypes
+     * An EnumMap that stores which WorldEdit TreeTypes apply to which Bukkit TreeTypes.
      */
     private static final EnumMap<TreeGenerator.TreeType, TreeType> treeTypeMapping =
             new EnumMap<>(TreeGenerator.TreeType.class);
@@ -285,6 +296,9 @@ public class BukkitWorld extends AbstractWorld {
     public boolean generateTree(TreeGenerator.TreeType type, EditSession editSession, BlockVector3 pt) {
         World world = getWorld();
         TreeType bukkitType = toBukkitTreeType(type);
+        if (bukkitType == TreeType.CHORUS_PLANT) {
+            pt = pt.add(0, 1, 0); // bukkit skips the feature gen which does this offset normally, so we have to add it back
+        }
         return type != null && world.generateTree(BukkitAdapter.adapt(world, pt), bukkitType,
                 new EditSessionBlockChangeDelegate(editSession));
     }
@@ -329,6 +343,7 @@ public class BukkitWorld extends AbstractWorld {
         return getWorld().getMaxHeight() - 1;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void fixAfterFastMode(Iterable<BlockVector2> chunks) {
         World world = getWorld();
@@ -432,8 +447,8 @@ public class BukkitWorld extends AbstractWorld {
                 return worldNativeAccess.setBlock(position, block, sideEffects);
             } catch (Exception e) {
                 if (block instanceof BaseBlock && ((BaseBlock) block).getNbtData() != null) {
-                    logger.warn("Tried to set a corrupt tile entity at " + position.toString() +
-                        ": " + ((BaseBlock) block).getNbtData(), e);
+                    logger.warn("Tried to set a corrupt tile entity at " + position.toString()
+                        + ": " + ((BaseBlock) block).getNbtData(), e);
                 } else {
                     logger.warn("Failed to set block via adapter, falling back to generic", e);
                 }
@@ -479,13 +494,29 @@ public class BukkitWorld extends AbstractWorld {
     }
 
     @Override
-    public BiomeType getBiome(BlockVector2 position) {
-        return BukkitAdapter.adapt(getWorld().getBiome(position.getBlockX(), position.getBlockZ()));
+    public boolean fullySupports3DBiomes() {
+        // Supports if API does and we're not in the overworld
+        return HAS_3D_BIOMES && getWorld().getEnvironment() != World.Environment.NORMAL;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public boolean setBiome(BlockVector2 position, BiomeType biome) {
-        getWorld().setBiome(position.getBlockX(), position.getBlockZ(), BukkitAdapter.adapt(biome));
+    public BiomeType getBiome(BlockVector3 position) {
+        if (HAS_3D_BIOMES) {
+            return BukkitAdapter.adapt(getWorld().getBiome(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
+        } else {
+            return BukkitAdapter.adapt(getWorld().getBiome(position.getBlockX(), position.getBlockZ()));
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean setBiome(BlockVector3 position, BiomeType biome) {
+        if (HAS_3D_BIOMES) {
+            getWorld().setBiome(position.getBlockX(), position.getBlockY(), position.getBlockZ(), BukkitAdapter.adapt(biome));
+        } else {
+            getWorld().setBiome(position.getBlockX(), position.getBlockZ(), BukkitAdapter.adapt(biome));
+        }
         return true;
     }
 }

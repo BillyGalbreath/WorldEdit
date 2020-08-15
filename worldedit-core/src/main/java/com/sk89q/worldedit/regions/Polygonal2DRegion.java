@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions;
@@ -23,8 +23,11 @@ import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.iterator.FlatRegion3DIterator;
 import com.sk89q.worldedit.regions.iterator.FlatRegionIterator;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.World;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -43,7 +46,7 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
     private boolean hasY = false;
 
     /**
-     * Construct the region
+     * Construct the region.
      */
     public Polygonal2DRegion() {
         this((World) null);
@@ -116,10 +119,18 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
         for (BlockVector2 v : points) {
             int x = v.getBlockX();
             int z = v.getBlockZ();
-            if (x < minX) minX = x;
-            if (z < minZ) minZ = z;
-            if (x > maxX) maxX = x;
-            if (z > maxZ) maxZ = z;
+            if (x < minX) {
+                minX = x;
+            }
+            if (z < minZ) {
+                minZ = z;
+            }
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (z > maxZ) {
+                maxZ = z;
+            }
         }
 
         int oldMinY = minY;
@@ -197,18 +208,23 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
     }
 
     @Override
-    public int getArea() {
-        double area = 0;
-        int i, j = points.size() - 1;
+    public long getVolume() {
+        long area = 0;
+        int i;
+        int j = points.size() - 1;
 
         for (i = 0; i < points.size(); ++i) {
-            area += (points.get(j).getBlockX() + points.get(i).getBlockX())
-                    * (points.get(j).getBlockZ() - points.get(i).getBlockZ());
+            long x = points.get(j).getBlockX() + points.get(i).getBlockX();
+            long z = points.get(j).getBlockZ() - points.get(i).getBlockZ();
+            area += x * z;
             j = i;
         }
 
-        return (int) Math.floor(Math.abs(area * 0.5)
-                * (maxY - minY + 1));
+        return BigDecimal.valueOf(area)
+                .multiply(BigDecimal.valueOf(0.5))
+                .abs()
+                .setScale(0, RoundingMode.FLOOR)
+                .longValue() * (maxY - minY + 1);
     }
 
     @Override
@@ -230,7 +246,7 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
     public void expand(BlockVector3... changes) throws RegionOperationException {
         for (BlockVector3 change : changes) {
             if (change.getBlockX() != 0 || change.getBlockZ() != 0) {
-                throw new RegionOperationException("Polygons can only be expanded vertically.");
+                throw new RegionOperationException(TranslatableComponent.of("worldedit.selection.polygon2d.error.expand-only-vertical"));
             }
             int changeY = change.getBlockY();
             if (changeY > 0) {
@@ -246,7 +262,7 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
     public void contract(BlockVector3... changes) throws RegionOperationException {
         for (BlockVector3 change : changes) {
             if (change.getBlockX() != 0 || change.getBlockZ() != 0) {
-                throw new RegionOperationException("Polygons can only be contracted vertically.");
+                throw new RegionOperationException(TranslatableComponent.of("worldedit.selection.polygon2d.error.contract-only-vertical"));
             }
             int changeY = change.getBlockY();
             if (changeY > 0) {
@@ -303,15 +319,17 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
 
         boolean inside = false;
         int npoints = points.size();
-        int xNew, zNew;
-        int xOld, zOld;
-        int x1, z1;
-        int x2, z2;
+        int xNew;
+        int zNew;
+        int x1;
+        int z1;
+        int x2;
+        int z2;
         long crossproduct;
         int i;
 
-        xOld = points.get(npoints - 1).getBlockX();
-        zOld = points.get(npoints - 1).getBlockZ();
+        int xOld = points.get(npoints - 1).getBlockX();
+        int zOld = points.get(npoints - 1).getBlockZ();
 
         for (i = 0; i < npoints; ++i) {
             xNew = points.get(i).getBlockX();
@@ -335,7 +353,9 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
                 crossproduct = ((long) targetZ - (long) z1) * (long) (x2 - x1)
                         - ((long) z2 - (long) z1) * (long) (targetX - x1);
                 if (crossproduct == 0) {
-                    if ((z1 <= targetZ) == (targetZ <= z2)) return true; //on edge
+                    if ((z1 <= targetZ) == (targetZ <= z2)) {
+                        return true; //on edge
+                    }
                 } else if (crossproduct < 0 && (x1 != targetX)) {
                     inside = !inside;
                 }
@@ -403,7 +423,9 @@ public class Polygonal2DRegion extends AbstractRegion implements FlatRegion {
         while (it.hasNext()) {
             BlockVector2 current = it.next();
             sb.append("(").append(current.getBlockX()).append(", ").append(current.getBlockZ()).append(")");
-            if (it.hasNext()) sb.append(" - ");
+            if (it.hasNext()) {
+                sb.append(" - ");
+            }
         }
         sb.append(" * (").append(minY).append(" - ").append(maxY).append(")");
         return sb.toString();

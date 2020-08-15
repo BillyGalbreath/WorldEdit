@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.sponge;
@@ -54,7 +54,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 public class SpongePlayer extends AbstractPlayerActor {
@@ -83,6 +82,7 @@ public class SpongePlayer extends AbstractPlayerActor {
         return this.player.getName();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public String getDisplayName() {
         return player.getDisplayNameData().displayName().getDirect().map(TextSerializers.LEGACY_FORMATTING_CODE::serialize).orElse(getName());
@@ -155,7 +155,7 @@ public class SpongePlayer extends AbstractPlayerActor {
 
     @Override
     public void print(Component component) {
-        TextAdapter.sendComponent(player, WorldEditText.format(component, getLocale()));
+        TextAdapter.sendMessage(player, WorldEditText.format(component, getLocale()));
     }
 
     private void sendColorized(String msg, TextColor formatting) {
@@ -165,12 +165,12 @@ public class SpongePlayer extends AbstractPlayerActor {
     }
 
     @Override
-    public void setPosition(Vector3 pos, float pitch, float yaw) {
+    public boolean trySetPosition(Vector3 pos, float pitch, float yaw) {
         org.spongepowered.api.world.Location<World> loc = new org.spongepowered.api.world.Location<>(
-                this.player.getWorld(), pos.getX(), pos.getY(), pos.getZ()
+            this.player.getWorld(), pos.getX(), pos.getY(), pos.getZ()
         );
 
-        this.player.setLocationAndRotation(loc, new Vector3d(pitch, yaw, 0));
+        return this.player.setLocationAndRotation(loc, new Vector3d(pitch, yaw, 0));
     }
 
     @Override
@@ -222,13 +222,13 @@ public class SpongePlayer extends AbstractPlayerActor {
             player.sendBlockChange(loc.getBlockPosition(), loc.getBlock());
         } else {
             // TODO
-//            player.sendBlockChange(loc, BukkitAdapter.adapt(block));
-//            if (block instanceof BaseBlock && ((BaseBlock) block).hasNbtData()) {
-//                BukkitImplAdapter adapter = WorldEditPlugin.getInstance().getBukkitImplAdapter();
-//                if (adapter != null) {
-//                    adapter.sendFakeNBT(player, pos, ((BaseBlock) block).getNbtData());
-//                }
-//            }
+            //            player.sendBlockChange(loc, BukkitAdapter.adapt(block));
+            //            if (block instanceof BaseBlock && ((BaseBlock) block).hasNbtData()) {
+            //                BukkitImplAdapter adapter = WorldEditPlugin.getInstance().getBukkitImplAdapter();
+            //                if (adapter != null) {
+            //                    adapter.sendFakeNBT(player, pos, ((BaseBlock) block).getNbtData());
+            //                }
+            //            }
         }
     }
 

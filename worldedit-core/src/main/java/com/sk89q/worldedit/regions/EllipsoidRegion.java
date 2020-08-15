@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions;
@@ -22,9 +22,12 @@ package com.sk89q.worldedit.regions;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.storage.ChunkStore;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -80,9 +83,16 @@ public class EllipsoidRegion extends AbstractRegion {
         return center.toVector3().add(getRadius()).toBlockPoint();
     }
 
+    private static final BigDecimal ELLIPSOID_BASE_MULTIPLIER = BigDecimal.valueOf((4.0 / 3.0) * Math.PI);
+
     @Override
-    public int getArea() {
-        return (int) Math.floor((4.0 / 3.0) * Math.PI * radius.getX() * radius.getY() * radius.getZ());
+    public long getVolume() {
+        return ELLIPSOID_BASE_MULTIPLIER
+                .multiply(BigDecimal.valueOf(radius.getX()))
+                .multiply(BigDecimal.valueOf(radius.getY()))
+                .multiply(BigDecimal.valueOf(radius.getZ()))
+                .setScale(0, RoundingMode.FLOOR)
+                .longValue();
     }
 
     @Override
@@ -104,8 +114,7 @@ public class EllipsoidRegion extends AbstractRegion {
         BlockVector3 diff = BlockVector3.ZERO.add(changes);
 
         if ((diff.getBlockX() & 1) + (diff.getBlockY() & 1) + (diff.getBlockZ() & 1) != 0) {
-            throw new RegionOperationException(
-                    "Ellipsoid changes must be even for each dimensions.");
+            throw new RegionOperationException(TranslatableComponent.of("worldedit.selection.ellipsoid.error.even-horizontal"));
         }
 
         return diff.divide(2).floor();

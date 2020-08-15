@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extension.platform;
@@ -43,7 +43,6 @@ import com.sk89q.worldedit.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -52,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -104,9 +104,9 @@ public class PlatformManager {
         // Make sure that versions are in sync
         if (firstSeenVersion != null) {
             if (!firstSeenVersion.equals(platform.getVersion())) {
-                logger.warn("Multiple ports of WorldEdit are installed but they report different versions ({} and {}). " +
-                                "If these two versions are truly different, then you may run into unexpected crashes and errors.",
-                        new Object[]{ firstSeenVersion, platform.getVersion() });
+                logger.warn("Multiple ports of WorldEdit are installed but they report different versions ({} and {}). "
+                        + "If these two versions are truly different, then you may run into unexpected crashes and errors.",
+                    firstSeenVersion, platform.getVersion());
             }
         } else {
             firstSeenVersion = platform.getVersion();
@@ -330,7 +330,7 @@ public class PlatformManager {
                     final BlockTool superPickaxe = session.getSuperPickaxe();
                     if (superPickaxe != null && superPickaxe.canUse(player)) {
                         if (superPickaxe.actPrimary(queryCapability(Capability.WORLD_EDITING),
-                                getConfiguration(), player, session, location)) {
+                                getConfiguration(), player, session, location, event.getFace())) {
                             event.setCancelled(true);
                         }
                         return;
@@ -340,7 +340,7 @@ public class PlatformManager {
                 Tool tool = session.getTool(player.getItemInHand(HandSide.MAIN_HAND).getType());
                 if (tool instanceof DoubleActionBlockTool && tool.canUse(player)) {
                     if (((DoubleActionBlockTool) tool).actSecondary(queryCapability(Capability.WORLD_EDITING),
-                            getConfiguration(), player, session, location)) {
+                            getConfiguration(), player, session, location, event.getFace())) {
                         event.setCancelled(true);
                     }
                 }
@@ -349,7 +349,7 @@ public class PlatformManager {
                 Tool tool = session.getTool(player.getItemInHand(HandSide.MAIN_HAND).getType());
                 if (tool instanceof BlockTool && tool.canUse(player)) {
                     if (((BlockTool) tool).actPrimary(queryCapability(Capability.WORLD_EDITING),
-                            getConfiguration(), player, session, location)) {
+                            getConfiguration(), player, session, location, event.getFace())) {
                         event.setCancelled(true);
                     }
                 }
@@ -396,6 +396,9 @@ public class PlatformManager {
 
                     break;
                 }
+
+                default:
+                    break;
             }
         } finally {
             Request.reset();

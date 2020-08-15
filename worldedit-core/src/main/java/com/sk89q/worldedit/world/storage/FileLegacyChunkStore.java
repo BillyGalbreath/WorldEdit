@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.storage;
@@ -32,7 +32,7 @@ import java.io.InputStream;
  */
 public class FileLegacyChunkStore extends LegacyChunkStore {
 
-    private File path;
+    private final File path;
 
     /**
      * Create an instance. The passed path is the folder to read the
@@ -51,11 +51,10 @@ public class FileLegacyChunkStore extends LegacyChunkStore {
      * @param f2 the second part of the pathname
      * @param name the name of the file
      * @return an input stream
-     * @throws DataException
-     * @throws IOException
+     * @throws DataException if there is an error getting data for this chunk
      */
     @Override
-    protected InputStream getInputStream(String f1, String f2, String name) throws DataException, IOException {
+    protected InputStream getInputStream(String f1, String f2, String name) throws DataException {
         String file = f1 + File.separator + f2 + File.separator + name;
         try {
             return new FileInputStream(new File(path, file));

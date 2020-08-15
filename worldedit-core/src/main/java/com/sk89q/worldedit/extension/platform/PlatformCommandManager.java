@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extension.platform;
@@ -39,7 +39,6 @@ import com.sk89q.worldedit.command.ClipboardCommands;
 import com.sk89q.worldedit.command.ClipboardCommandsRegistration;
 import com.sk89q.worldedit.command.ExpandCommands;
 import com.sk89q.worldedit.command.GeneralCommands;
-import com.sk89q.worldedit.command.GeneralCommandsRegistration;
 import com.sk89q.worldedit.command.GenerationCommands;
 import com.sk89q.worldedit.command.GenerationCommandsRegistration;
 import com.sk89q.worldedit.command.HistoryCommands;
@@ -78,6 +77,7 @@ import com.sk89q.worldedit.command.argument.EntityRemoverConverter;
 import com.sk89q.worldedit.command.argument.EnumConverter;
 import com.sk89q.worldedit.command.argument.FactoryConverter;
 import com.sk89q.worldedit.command.argument.HeightConverter;
+import com.sk89q.worldedit.command.argument.OffsetConverter;
 import com.sk89q.worldedit.command.argument.RegionFactoryConverter;
 import com.sk89q.worldedit.command.argument.RegistryConverter;
 import com.sk89q.worldedit.command.argument.SideEffectConverter;
@@ -91,6 +91,7 @@ import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.event.platform.CommandEvent;
 import com.sk89q.worldedit.event.platform.CommandSuggestionEvent;
 import com.sk89q.worldedit.extent.Extent;
+import com.sk89q.worldedit.internal.annotation.OptionalArg;
 import com.sk89q.worldedit.internal.annotation.Selection;
 import com.sk89q.worldedit.internal.command.CommandArgParser;
 import com.sk89q.worldedit.internal.command.CommandLoggingHandler;
@@ -221,59 +222,61 @@ public final class PlatformCommandManager {
         WorldConverter.register(commandManager);
         SideEffectConverter.register(commandManager);
         HeightConverter.register(commandManager);
+        OffsetConverter.register(worldEdit, commandManager);
     }
 
     private void registerAlwaysInjectedValues() {
         globalInjectedValues.injectValue(Key.of(Region.class, Selection.class),
-                context -> {
-                    LocalSession localSession = context.injectedValue(Key.of(LocalSession.class))
-                            .orElseThrow(() -> new IllegalStateException("No LocalSession"));
-                    return context.injectedValue(Key.of(World.class))
-                            .map(world -> {
-                                try {
-                                    return localSession.getSelection(world);
-                                } catch (IncompleteRegionException e) {
-                                    exceptionConverter.convert(e);
-                                    throw new AssertionError("Should have thrown a new exception.", e);
-                                }
-                            });
-                });
+            context -> {
+                LocalSession localSession = context.injectedValue(Key.of(LocalSession.class))
+                    .orElseThrow(() -> new IllegalStateException("No LocalSession"));
+                return context.injectedValue(Key.of(World.class))
+                    .map(world -> {
+                        try {
+                            return localSession.getSelection(world);
+                        } catch (IncompleteRegionException e) {
+                            exceptionConverter.convert(e);
+                            throw new AssertionError("Should have thrown a new exception.", e);
+                        }
+                    });
+            });
         globalInjectedValues.injectValue(Key.of(EditSession.class),
-                context -> {
-                    LocalSession localSession = context.injectedValue(Key.of(LocalSession.class))
-                            .orElseThrow(() -> new IllegalStateException("No LocalSession"));
-                    return context.injectedValue(Key.of(Actor.class))
-                            .map(actor -> {
-                                EditSession editSession = localSession.createEditSession(actor);
-                                editSession.enableStandardMode();
-                                return editSession;
-                            });
-                });
+            context -> {
+                LocalSession localSession = context.injectedValue(Key.of(LocalSession.class))
+                    .orElseThrow(() -> new IllegalStateException("No LocalSession"));
+                return context.injectedValue(Key.of(Actor.class))
+                    .map(actor -> {
+                        EditSession editSession = localSession.createEditSession(actor);
+                        editSession.enableStandardMode();
+                        return editSession;
+                    });
+            });
         globalInjectedValues.injectValue(Key.of(World.class),
-                context -> {
-                    LocalSession localSession = context.injectedValue(Key.of(LocalSession.class))
-                            .orElseThrow(() -> new IllegalStateException("No LocalSession"));
-                    return context.injectedValue(Key.of(Actor.class))
-                            .map(actor -> {
-                                try {
-                                    if (localSession.hasWorldOverride()) {
-                                        return localSession.getWorldOverride();
-                                    } else if (actor instanceof Locatable && ((Locatable) actor).getExtent() instanceof World) {
-                                        return (World) ((Locatable) actor).getExtent();
-                                    } else {
-                                        throw new MissingWorldException();
-                                    }
-                                } catch (MissingWorldException e) {
-                                    exceptionConverter.convert(e);
-                                    throw new AssertionError("Should have thrown a new exception.", e);
-                                }
-                            });
-                });
+            context -> {
+                LocalSession localSession = context.injectedValue(Key.of(LocalSession.class))
+                    .orElseThrow(() -> new IllegalStateException("No LocalSession"));
+                return context.injectedValue(Key.of(Actor.class))
+                    .map(actor -> {
+                        try {
+                            if (localSession.hasWorldOverride()) {
+                                return localSession.getWorldOverride();
+                            } else if (actor instanceof Locatable && ((Locatable) actor).getExtent() instanceof World) {
+                                return (World) ((Locatable) actor).getExtent();
+                            } else {
+                                throw new MissingWorldException();
+                            }
+                        } catch (MissingWorldException e) {
+                            exceptionConverter.convert(e);
+                            throw new AssertionError("Should have thrown a new exception.", e);
+                        }
+                    });
+            });
     }
 
     private <CI> void registerSubCommands(String name, List<String> aliases, String desc,
-                                      CommandRegistration<CI> registration, CI instance) {
-        registerSubCommands(name, aliases, desc, registration, instance, m -> {});
+                                          CommandRegistration<CI> registration, CI instance) {
+        registerSubCommands(name, aliases, desc, registration, instance, m -> {
+        });
     }
 
     private <CI> void registerSubCommands(String name, List<String> aliases, String desc,
@@ -358,10 +361,11 @@ public final class PlatformCommandManager {
             ClipboardCommandsRegistration.builder(),
             new ClipboardCommands()
         );
-        this.registration.register(
+        GeneralCommands.register(
+            registration,
             commandManager,
-            GeneralCommandsRegistration.builder(),
-            new GeneralCommands(worldEdit)
+            commandManagerService,
+            worldEdit
         );
         this.registration.register(
             commandManager,
@@ -512,18 +516,15 @@ public final class PlatformCommandManager {
                 .build());
             ImmutableList<Command> cmd = e.getCommands();
             if (!cmd.isEmpty()) {
-                actor.print(TextComponent.builder("Usage: ")
-                    .color(TextColor.RED)
-                    .append(HelpGenerator.create(e.getCommandParseResult()).getUsage())
-                    .build());
+                actor.printError(
+                        TranslatableComponent.of("worldedit.error.incorrect-usage",
+                        HelpGenerator.create(e.getCommandParseResult()).getUsage())
+                );
             }
         } catch (CommandExecutionException e) {
             handleUnknownException(actor, e.getCause());
         } catch (CommandException e) {
-            actor.print(TextComponent.builder("")
-                    .color(TextColor.RED)
-                    .append(e.getRichMessage())
-                    .build());
+            actor.printError(e.getRichMessage());
         } catch (Throwable t) {
             handleUnknownException(actor, t);
         } finally {
@@ -533,7 +534,7 @@ public final class PlatformCommandManager {
             if (editSessionOpt.isPresent()) {
                 EditSession editSession = editSessionOpt.get();
                 session.remember(editSession);
-                editSession.flushSession();
+                editSession.close();
 
                 if (config.profile) {
                     long time = System.currentTimeMillis() - start;
@@ -561,6 +562,7 @@ public final class PlatformCommandManager {
         store.injectValue(Key.of(Actor.class), ValueProvider.constant(actor));
         if (actor instanceof Player) {
             store.injectValue(Key.of(Player.class), ValueProvider.constant((Player) actor));
+            store.injectValue(Key.of(Player.class, OptionalArg.class), ValueProvider.constant((Player) actor));
         } else {
             store.injectValue(Key.of(Player.class), context -> {
                 throw new CommandException(TranslatableComponent.of("worldedit.command.player-only"), ImmutableList.of());

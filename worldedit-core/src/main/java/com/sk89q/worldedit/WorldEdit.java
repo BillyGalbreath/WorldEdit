@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit;
@@ -38,11 +38,13 @@ import com.sk89q.worldedit.extension.factory.MaskFactory;
 import com.sk89q.worldedit.extension.factory.PatternFactory;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extension.platform.Capability;
+import com.sk89q.worldedit.extension.platform.Locatable;
 import com.sk89q.worldedit.extension.platform.Platform;
 import com.sk89q.worldedit.extension.platform.PlatformManager;
 import com.sk89q.worldedit.extent.inventory.BlockBag;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.pattern.Pattern;
+import com.sk89q.worldedit.internal.SchematicsEventListener;
 import com.sk89q.worldedit.internal.expression.invoke.ReturnException;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.scripting.CraftScriptContext;
@@ -64,6 +66,7 @@ import com.sk89q.worldedit.util.io.file.InvalidFilenameException;
 import com.sk89q.worldedit.util.task.SimpleSupervisor;
 import com.sk89q.worldedit.util.task.Supervisor;
 import com.sk89q.worldedit.util.translation.TranslationManager;
+import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldedit.world.registry.BundledBlockData;
@@ -72,8 +75,6 @@ import com.sk89q.worldedit.world.registry.LegacyMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import javax.script.ScriptException;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,6 +88,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.Nullable;
+import javax.script.ScriptException;
 
 import static com.sk89q.worldedit.event.platform.Interaction.HIT;
 import static com.sk89q.worldedit.event.platform.Interaction.OPEN;
@@ -113,7 +116,8 @@ public final class WorldEdit {
 
     private final EventBus eventBus = new EventBus();
     private final PlatformManager platformManager = new PlatformManager(this);
-    private final EditSessionFactory editSessionFactory = new EditSessionFactory.EditSessionFactoryImpl(eventBus);
+    @Deprecated
+    private final EditSessionFactory editSessionFactory = new EditSessionFactory.EditSessionFactoryImpl();
     private final SessionManager sessions = new SessionManager(this);
     private final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(
             EvenMoreExecutors.newBoundedCachedThreadPool(0, 1, 20, "WorldEdit Task Executor - %s"));
@@ -133,6 +137,7 @@ public final class WorldEdit {
     }
 
     private WorldEdit() {
+        eventBus.register(new SchematicsEventListener());
     }
 
     /**
@@ -295,7 +300,9 @@ public final class WorldEdit {
      * @throws FilenameException thrown if the filename is invalid
      */
     private File getSafeFile(@Nullable Actor actor, File dir, String filename, String defaultExt, String[] extensions, boolean isSave) throws FilenameException {
-        if (extensions != null && (extensions.length == 1 && extensions[0] == null)) extensions = null;
+        if (extensions != null && (extensions.length == 1 && extensions[0] == null)) {
+            extensions = null;
+        }
 
         File f;
 
@@ -307,7 +314,7 @@ public final class WorldEdit {
             }
 
             if (f == null) {
-                throw new FileSelectionAbortedException("No file selected");
+                throw new FileSelectionAbortedException(TranslatableComponent.of("worldedit.error.no-file-selected"));
             }
         } else {
             List<String> exts = extensions == null ? ImmutableList.of(defaultExt) : Lists.asList(defaultExt, extensions);
@@ -326,12 +333,12 @@ public final class WorldEdit {
 
             boolean isSym = existingParent != null && !existingParent.toRealPath().equals(existingParent);
             if (!inDir || (!getConfiguration().allowSymlinks && isSym)) {
-                throw new FilenameResolutionException(filename, "Path is outside allowable root");
+                throw new FilenameResolutionException(filename, TranslatableComponent.of("worldedit.error.file-resolution.outside-root"));
             }
 
             return filePath.toFile();
         } catch (IOException e) {
-            throw new FilenameResolutionException(filename, "Failed to resolve path");
+            throw new FilenameResolutionException(filename, TranslatableComponent.of("worldedit.error.file-resolution.resolve-failed"));
         }
     }
 
@@ -358,7 +365,7 @@ public final class WorldEdit {
             result = getSafeFileWithExtension(dir, filename, iter.next());
         }
         if (result == null) {
-            throw new InvalidFilenameException(filename, "Invalid characters or extension missing");
+            throw new InvalidFilenameException(filename, TranslatableComponent.of("worldedit.error.invalid-filename.invalid-characters"));
         }
         return result;
     }
@@ -395,7 +402,7 @@ public final class WorldEdit {
      * Checks to see if the specified radius is within bounds.
      *
      * @param radius the radius
-     * @throws MaxRadiusException
+     * @throws MaxRadiusException if the radius is bigger than the configured radius
      */
     public void checkMaxRadius(double radius) throws MaxRadiusException {
         if (getConfiguration().maxRadius > 0 && radius > getConfiguration().maxRadius) {
@@ -407,7 +414,7 @@ public final class WorldEdit {
      * Checks to see if the specified brush radius is within bounds.
      *
      * @param radius the radius
-     * @throws MaxBrushRadiusException
+     * @throws MaxBrushRadiusException if the radius is bigger than the configured radius
      */
     public void checkMaxBrushRadius(double radius) throws MaxBrushRadiusException {
         if (getConfiguration().maxBrushRadius > 0 && radius > getConfiguration().maxBrushRadius) {
@@ -421,14 +428,27 @@ public final class WorldEdit {
      *
      * @param path the subpath under the working directory
      * @return a working directory
+     * @deprecated Use {@link WorldEdit#getWorkingDirectoryPath(String)} instead
      */
+    @Deprecated
     public File getWorkingDirectoryFile(String path) {
-        File f = new File(path);
-        if (f.isAbsolute()) {
-            return f;
+        return getWorkingDirectoryPath(path).toFile();
+    }
+
+    /**
+     * Get a file relative to the defined working directory. If the specified
+     * path is absolute, then the working directory is not used.
+     *
+     * @param path the subpath under the working directory
+     * @return a working directory
+     */
+    public Path getWorkingDirectoryPath(String path) {
+        Path p = Paths.get(path);
+        if (p.isAbsolute()) {
+            return p;
         }
 
-        return new File(getConfiguration().getWorkingDirectory(), path);
+        return getConfiguration().getWorkingDirectoryPath().resolve(path);
     }
 
     /**
@@ -472,6 +492,7 @@ public final class WorldEdit {
     }
 
     private static final Map<String, Direction> NAME_TO_DIRECTION_MAP;
+
     static {
         SetMultimap<Direction, String> directionNames = HashMultimap.create();
         for (Direction direction : Direction.valuesOf(
@@ -616,8 +637,21 @@ public final class WorldEdit {
      * @param clicked the clicked block
      * @return false if you want the action to go through
      */
+    @Deprecated
     public boolean handleBlockRightClick(Player player, Location clicked) {
-        BlockInteractEvent event = new BlockInteractEvent(player, clicked, OPEN);
+        return handleBlockRightClick(player, clicked, null);
+    }
+
+    /**
+     * Called on right click.
+     *
+     * @param player the player
+     * @param clicked the clicked block
+     * @param face The clicked face
+     * @return false if you want the action to go through
+     */
+    public boolean handleBlockRightClick(Player player, Location clicked, @Nullable Direction face) {
+        BlockInteractEvent event = new BlockInteractEvent(player, clicked, face, OPEN);
         getEventBus().post(event);
         return event.isCancelled();
     }
@@ -629,8 +663,21 @@ public final class WorldEdit {
      * @param clicked the clicked block
      * @return false if you want the action to go through
      */
+    @Deprecated
     public boolean handleBlockLeftClick(Player player, Location clicked) {
-        BlockInteractEvent event = new BlockInteractEvent(player, clicked, HIT);
+        return handleBlockLeftClick(player, clicked, null);
+    }
+
+    /**
+     * Called on left click.
+     *
+     * @param player the player
+     * @param clicked the clicked block
+     * @param face The clicked face
+     * @return false if you want the action to go through
+     */
+    public boolean handleBlockLeftClick(Player player, Location clicked, @Nullable Direction face) {
+        BlockInteractEvent event = new BlockInteractEvent(player, clicked, face, HIT);
         getEventBus().post(event);
         return event.isCancelled();
     }
@@ -715,7 +762,7 @@ public final class WorldEdit {
             logger.warn("Failed to execute script", e);
         } finally {
             for (EditSession editSession : scriptContext.getEditSessions()) {
-                editSession.flushSession();
+                editSession.close();
                 session.remember(editSession);
             }
         }
@@ -732,9 +779,39 @@ public final class WorldEdit {
 
     /**
      * Get a factory for {@link EditSession}s.
+     *
+     * @deprecated Use {@link #newEditSessionBuilder()} instead. See {@link EditSessionFactory} for details.
      */
+    @Deprecated
     public EditSessionFactory getEditSessionFactory() {
         return editSessionFactory;
+    }
+
+    /**
+     * Create a builder for {@link EditSession}s.
+     */
+    public EditSessionBuilder newEditSessionBuilder() {
+        return new EditSessionBuilder(eventBus);
+    }
+
+    /**
+     * Shorthand for {@code newEditSessionBuilder().world(world).build()}.
+     *
+     * @param world the world
+     * @return the new {@link EditSession}
+     */
+    public EditSession newEditSession(@Nullable World world) {
+        return newEditSessionBuilder().world(world).build();
+    }
+
+    /**
+     * Shorthand for {@code newEditSessionBuilder().locatableActor(locatableActor).build()}.
+     *
+     * @param locatableActor the actor
+     * @return the new {@link EditSession}
+     */
+    public <A extends Actor & Locatable> EditSession newEditSession(A locatableActor) {
+        return newEditSessionBuilder().locatableActor(locatableActor).build();
     }
 
     /**

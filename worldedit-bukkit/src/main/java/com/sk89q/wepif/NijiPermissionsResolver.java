@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.wepif;
@@ -35,8 +35,8 @@ public class NijiPermissionsResolver implements PermissionsResolver {
 
     private static final Logger log = LoggerFactory.getLogger(NijiPermissionsResolver.class);
 
-    private Server server;
-    private Permissions api;
+    private final Server server;
+    private final Permissions api;
 
     public static PermissionsResolver factory(Server server, YAMLProcessor config) {
         PluginManager pluginManager = server.getPluginManager();
@@ -72,15 +72,16 @@ public class NijiPermissionsResolver implements PermissionsResolver {
     }
 
     @Override
-    @SuppressWarnings("static-access")
     public boolean hasPermission(String name, String permission) {
         try {
             Player player = server.getPlayerExact(name);
-            if (player == null) return false;
+            if (player == null) {
+                return false;
+            }
             try {
                 return api.getHandler().has(player, permission);
             } catch (Throwable t) {
-                return api.Security.permission(player, permission);
+                return Permissions.Security.permission(player, permission);
             }
         } catch (Throwable t) {
             log.warn("Failed to check permissions", t);
@@ -103,15 +104,16 @@ public class NijiPermissionsResolver implements PermissionsResolver {
     }
 
     @Override
-    @SuppressWarnings("static-access")
     public boolean inGroup(String name, String group) {
         try {
             Player player = server.getPlayerExact(name);
-            if (player == null) return false;
+            if (player == null) {
+                return false;
+            }
             try {
                 return api.getHandler().inGroup(player.getWorld().getName(), name, group);
             } catch (Throwable t) {
-                return api.Security.inGroup(name, group);
+                return Permissions.Security.inGroup(name, group);
             }
         } catch (Throwable t) {
             log.warn("Failed to check groups", t);
@@ -120,17 +122,20 @@ public class NijiPermissionsResolver implements PermissionsResolver {
     }
 
     @Override
-    @SuppressWarnings("static-access")
     public String[] getGroups(String name) {
         try {
             Player player = server.getPlayerExact(name);
-            if (player == null) return new String[0];
+            if (player == null) {
+                return new String[0];
+            }
             String[] groups = null;
             try {
                 groups = api.getHandler().getGroups(player.getWorld().getName(), player.getName());
             } catch (Throwable t) {
-                String group = api.Security.getGroup(player.getWorld().getName(), player.getName());
-                if (group != null) groups = new String[] { group };
+                String group = Permissions.Security.getGroup(player.getWorld().getName(), player.getName());
+                if (group != null) {
+                    groups = new String[] { group };
+                }
             }
             if (groups == null) {
                 return new String[0];

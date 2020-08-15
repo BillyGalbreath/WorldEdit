@@ -3,25 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.fabric;
-
-import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.Command;
@@ -50,6 +46,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
+import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
+
 
 public final class CommandWrapper {
 
@@ -60,14 +60,13 @@ public final class CommandWrapper {
         ImmutableList.Builder<String> aliases = ImmutableList.builder();
         aliases.add(command.getName()).addAll(command.getAliases());
 
-        Command<ServerCommandSource> commandRunner =
-                ctx -> {
-                    WorldEdit.getInstance().getEventBus().post(new com.sk89q.worldedit.event.platform.CommandEvent(
-                            adaptPlayer(ctx.getSource().getPlayer()),
-                            ctx.getInput()
-                    ));
-                    return 0;
-                };
+        Command<ServerCommandSource> commandRunner = ctx -> {
+            WorldEdit.getInstance().getEventBus().post(new com.sk89q.worldedit.event.platform.CommandEvent(
+                adaptPlayer(ctx.getSource().getPlayer()),
+                ctx.getInput()
+            ));
+            return 0;
+        };
 
         for (String alias : aliases.build()) {
             LiteralArgumentBuilder<ServerCommandSource> base = literal(alias).executes(commandRunner)

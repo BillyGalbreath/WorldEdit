@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions.selector;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -42,8 +40,9 @@ import com.sk89q.worldedit.world.World;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Creates a {@code Polygonal2DRegion} from a user's selections.
@@ -110,7 +109,7 @@ public class Polygonal2DRegionSelector implements RegionSelector, CUIRegion {
      */
     public Polygonal2DRegionSelector(@Nullable World world, List<BlockVector2> points, int minY, int maxY) {
         checkNotNull(points);
-        
+
         final BlockVector2 pos2D = points.get(0);
         pos1 = BlockVector3.at(pos2D.getX(), minY, pos2D.getZ());
         region = new Polygonal2DRegion(world, points, minY, maxY);
@@ -169,7 +168,7 @@ public class Polygonal2DRegionSelector implements RegionSelector, CUIRegion {
         player.printInfo(TranslatableComponent.of("worldedit.selection.polygon2d.explain.primary", TextComponent.of(pos.toString())));
 
         session.dispatchCUIEvent(player, new SelectionShapeEvent(getTypeID()));
-        session.dispatchCUIEvent(player, new SelectionPoint2DEvent(0, pos, getArea()));
+        session.dispatchCUIEvent(player, new SelectionPoint2DEvent(0, pos, getVolume()));
         session.dispatchCUIEvent(player, new SelectionMinMaxEvent(region.getMinimumY(), region.getMaximumY()));
     }
 
@@ -181,7 +180,7 @@ public class Polygonal2DRegionSelector implements RegionSelector, CUIRegion {
                 TextComponent.of(pos.toString())
         ));
 
-        session.dispatchCUIEvent(player, new SelectionPoint2DEvent(region.size() - 1, pos, getArea()));
+        session.dispatchCUIEvent(player, new SelectionPoint2DEvent(region.size() - 1, pos, getVolume()));
         session.dispatchCUIEvent(player, new SelectionMinMaxEvent(region.getMinimumY(), region.getMaximumY()));
     }
 
@@ -242,8 +241,8 @@ public class Polygonal2DRegionSelector implements RegionSelector, CUIRegion {
     }
 
     @Override
-    public int getArea() {
-        return region.getArea();
+    public long getVolume() {
+        return region.getVolume();
     }
 
     /**
@@ -259,7 +258,7 @@ public class Polygonal2DRegionSelector implements RegionSelector, CUIRegion {
     public void describeCUI(LocalSession session, Actor player) {
         final List<BlockVector2> points = region.getPoints();
         for (int id = 0; id < points.size(); id++) {
-            session.dispatchCUIEvent(player, new SelectionPoint2DEvent(id, points.get(id), getArea()));
+            session.dispatchCUIEvent(player, new SelectionPoint2DEvent(id, points.get(id), getVolume()));
         }
 
         session.dispatchCUIEvent(player, new SelectionMinMaxEvent(region.getMinimumY(), region.getMaximumY()));

@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.util;
@@ -41,7 +41,8 @@ public class TargetBlock {
     private final World world;
 
     private int maxDistance;
-    private double checkDistance, curDistance;
+    private double checkDistance;
+    private double curDistance;
     private BlockVector3 targetPos = BlockVector3.ZERO;
     private Vector3 targetPosDouble = Vector3.ZERO;
     private BlockVector3 prevPos = BlockVector3.ZERO;
@@ -53,7 +54,7 @@ public class TargetBlock {
     private Mask solidMask;
 
     /**
-     * Constructor requiring a player, uses default values
+     * Constructor requiring a player, uses default values.
      *
      * @param player player to work with
      */
@@ -66,7 +67,7 @@ public class TargetBlock {
     }
 
     /**
-     * Constructor requiring a player, max distance and a checking distance
+     * Constructor requiring a player, max distance and a checking distance.
      *
      * @param player Player to work with
      * @param maxDistance how far it checks for blocks
@@ -108,27 +109,27 @@ public class TargetBlock {
     }
 
     /**
-     * Set the values, all constructors uses this function
+     * Set the values, all constructors uses this function.
      *
      * @param loc location of the view
-     * @param xRotation the X rotation
-     * @param yRotation the Y rotation
+     * @param rotationX the X rotation
+     * @param rotationY the Y rotation
      * @param maxDistance how far it checks for blocks
      * @param viewHeight where the view is positioned in y-axis
      * @param checkDistance how often to check for blocks, the smaller the more precise
      */
-    private void setValues(Vector3 loc, double xRotation, double yRotation, int maxDistance, double viewHeight, double checkDistance) {
+    private void setValues(Vector3 loc, double rotationX, double rotationY, int maxDistance, double viewHeight, double checkDistance) {
         this.maxDistance = maxDistance;
         this.checkDistance = checkDistance;
         this.curDistance = 0;
-        xRotation = (xRotation + 90) % 360;
-        yRotation *= -1;
+        rotationX = (rotationX + 90) % 360;
+        rotationY *= -1;
 
-        double h = (checkDistance * Math.cos(Math.toRadians(yRotation)));
+        double h = (checkDistance * Math.cos(Math.toRadians(rotationY)));
 
-        offset = Vector3.at((h * Math.cos(Math.toRadians(xRotation))),
-                            (checkDistance * Math.sin(Math.toRadians(yRotation))),
-                            (h * Math.sin(Math.toRadians(xRotation))));
+        offset = Vector3.at((h * Math.cos(Math.toRadians(rotationX))),
+                            (checkDistance * Math.sin(Math.toRadians(rotationY))),
+                            (h * Math.sin(Math.toRadians(rotationX))));
 
         targetPosDouble = loc.add(0, viewHeight, 0);
         targetPos = targetPosDouble.toBlockPoint();
@@ -169,7 +170,8 @@ public class TargetBlock {
      */
     public Location getTargetBlock() {
         //noinspection StatementWithEmptyBody
-        while (getNextBlock() != null && !stopMask.test(targetPos)) ;
+        while (getNextBlock() != null && !stopMask.test(targetPos)) {
+        }
         return getCurrentBlock();
     }
 
@@ -181,12 +183,13 @@ public class TargetBlock {
      */
     public Location getSolidTargetBlock() {
         //noinspection StatementWithEmptyBody
-        while (getNextBlock() != null && !solidMask.test(targetPos)) ;
+        while (getNextBlock() != null && !solidMask.test(targetPos)) {
+        }
         return getCurrentBlock();
     }
 
     /**
-     * Get next block
+     * Get next block.
      *
      * @return next block position
      */
@@ -212,7 +215,7 @@ public class TargetBlock {
     }
 
     /**
-     * Returns the current block along the line of vision
+     * Returns the current block along the line of vision.
      *
      * @return block position
      */
@@ -225,7 +228,7 @@ public class TargetBlock {
     }
 
     /**
-     * Returns the previous block in the aimed path
+     * Returns the previous block in the aimed path.
      *
      * @return block position
      */
@@ -236,15 +239,18 @@ public class TargetBlock {
     public Location getAnyTargetBlockFace() {
         getAnyTargetBlock();
         Location current = getCurrentBlock();
-        if (current != null)
+        if (current != null) {
             return current.setDirection(current.toVector().subtract(getPreviousBlock().toVector()));
-        else
+        } else {
             return new Location(world, targetPos.toVector3(), Float.NaN, Float.NaN);
+        }
     }
 
     public Location getTargetBlockFace() {
         getTargetBlock();
-        if (getCurrentBlock() == null) return null;
+        if (getCurrentBlock() == null) {
+            return null;
+        }
         return getCurrentBlock().setDirection(getCurrentBlock().toVector().subtract(getPreviousBlock().toVector()));
     }
 

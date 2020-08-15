@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extent.reorder;
@@ -132,15 +132,19 @@ public class MultiStageReorder extends AbstractBufferingExtent implements Reorde
         BlockCategories.DOORS.getAll().forEach(type -> priorityMap.put(type, PlacementPriority.FINAL));
         BlockCategories.BANNERS.getAll().forEach(type -> priorityMap.put(type, PlacementPriority.FINAL));
         BlockCategories.SIGNS.getAll().forEach(type -> priorityMap.put(type, PlacementPriority.FINAL));
-        priorityMap.put(BlockTypes.SIGN, PlacementPriority.FINAL);
-        priorityMap.put(BlockTypes.WALL_SIGN, PlacementPriority.FINAL);
+        @SuppressWarnings("deprecation")
+        BlockType sign = BlockTypes.SIGN;
+        priorityMap.put(sign, PlacementPriority.FINAL);
+        @SuppressWarnings("deprecation")
+        BlockType wallSign = BlockTypes.WALL_SIGN;
+        priorityMap.put(wallSign, PlacementPriority.FINAL);
         priorityMap.put(BlockTypes.CACTUS, PlacementPriority.FINAL);
         priorityMap.put(BlockTypes.SUGAR_CANE, PlacementPriority.FINAL);
         priorityMap.put(BlockTypes.PISTON_HEAD, PlacementPriority.FINAL);
         priorityMap.put(BlockTypes.MOVING_PISTON, PlacementPriority.FINAL);
     }
 
-    private Map<PlacementPriority, BlockMap<BaseBlock>> stages = new HashMap<>();
+    private final Map<PlacementPriority, BlockMap<BaseBlock>> stages = new HashMap<>();
 
     private boolean enabled;
 
@@ -232,6 +236,8 @@ public class MultiStageReorder extends AbstractBufferingExtent implements Reorde
                     break;
                 case LAST:
                     stages.get(PlacementPriority.CLEAR_LAST).put(location, replacement);
+                    break;
+                default:
                     break;
             }
 

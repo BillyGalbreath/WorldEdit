@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit;
@@ -50,6 +50,7 @@ import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.session.request.Request;
 import com.sk89q.worldedit.util.Countable;
 import com.sk89q.worldedit.util.SideEffectSet;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockState;
@@ -57,7 +58,6 @@ import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldedit.world.item.ItemTypes;
 import com.sk89q.worldedit.world.snapshot.experimental.Snapshot;
 
-import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Collections;
@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -86,12 +87,12 @@ public class LocalSession {
     // Session related
     private transient RegionSelector selector = new CuboidRegionSelector();
     private transient boolean placeAtPos1 = false;
-    private transient LinkedList<EditSession> history = new LinkedList<>();
+    private final transient LinkedList<EditSession> history = new LinkedList<>();
     private transient int historyPointer = 0;
     private transient ClipboardHolder clipboard;
     private transient boolean superPickaxe = false;
     private transient BlockTool pickaxeMode = new SinglePickaxe();
-    private transient Map<ItemType, Tool> tools = new HashMap<>();
+    private final transient Map<ItemType, Tool> tools = new HashMap<>();
     private transient int maxBlocksChanged = -1;
     private transient int maxTimeoutTime;
     private transient boolean useInventory;
@@ -108,6 +109,7 @@ public class LocalSession {
     private transient World worldOverride;
     private transient boolean tickingWatchdog = true;
     private transient boolean hasBeenToldVersion;
+    private transient boolean tracingActions;
 
     // Saved properties
     private String lastScript;
@@ -217,7 +219,9 @@ public class LocalSession {
         checkNotNull(editSession);
 
         // Don't store anything if no changes were made
-        if (editSession.size() == 0) return;
+        if (editSession.size() == 0) {
+            return;
+        }
 
         // Destroy any sessions after this undo point
         while (historyPointer < history.size()) {
@@ -242,8 +246,10 @@ public class LocalSession {
         --historyPointer;
         if (historyPointer >= 0) {
             EditSession editSession = history.get(historyPointer);
-            try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
-                    .getEditSession(editSession.getWorld(), -1, newBlockBag, actor)) {
+            try (EditSession newEditSession =
+                     WorldEdit.getInstance().newEditSessionBuilder()
+                         .world(editSession.getWorld()).blockBag(newBlockBag).actor(actor)
+                         .build()) {
                 prepareEditingExtents(editSession, actor);
                 editSession.undo(newEditSession);
             }
@@ -255,7 +261,7 @@ public class LocalSession {
     }
 
     /**
-     * Performs a redo
+     * Performs a redo.
      *
      * @param newBlockBag a new block bag
      * @param actor the actor
@@ -265,8 +271,10 @@ public class LocalSession {
         checkNotNull(actor);
         if (historyPointer < history.size()) {
             EditSession editSession = history.get(historyPointer);
-            try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
-                    .getEditSession(editSession.getWorld(), -1, newBlockBag, actor)) {
+            try (EditSession newEditSession =
+                     WorldEdit.getInstance().newEditSessionBuilder()
+                         .world(editSession.getWorld()).blockBag(newBlockBag).actor(actor)
+                         .build()) {
                 prepareEditingExtents(editSession, actor);
                 editSession.redo(newEditSession);
             }
@@ -296,6 +304,14 @@ public class LocalSession {
 
     public void setTickingWatchdog(boolean tickingWatchdog) {
         this.tickingWatchdog = tickingWatchdog;
+    }
+
+    public boolean isTracingActions() {
+        return tracingActions;
+    }
+
+    public void setTracingActions(boolean tracingActions) {
+        this.tracingActions = tracingActions;
     }
 
     /**
@@ -419,6 +435,8 @@ public class LocalSession {
     }
 
     /**
+     * Check if tool control is enabled.
+     *
      * @return true always - see deprecation notice
      * @deprecated The wand is now a tool that can be bound/unbound.
      */
@@ -428,6 +446,8 @@ public class LocalSession {
     }
 
     /**
+     * Set if tool control is enabled.
+     *
      * @param toolControl unused - see deprecation notice
      * @deprecated The wand is now a tool that can be bound/unbound.
      */
@@ -654,7 +674,7 @@ public class LocalSession {
      */
     public void setTool(ItemType item, @Nullable Tool tool) throws InvalidToolBindException {
         if (item.hasBlockType()) {
-            throw new InvalidToolBindException(item, "Blocks can't be used");
+            throw new InvalidToolBindException(item, TranslatableComponent.of("worldedit.tool.error.item-only"));
         }
         if (tool instanceof SelectionWand) {
             setSingleItemTool(id -> this.wandItem = id, this.wandItem, item);
@@ -730,7 +750,9 @@ public class LocalSession {
      * @param actor the actor
      */
     public void tellVersion(Actor actor) {
-        if (hasBeenToldVersion) return;
+        if (hasBeenToldVersion) {
+            return;
+        }
         hasBeenToldVersion = true;
         actor.sendAnnouncements();
     }
@@ -883,7 +905,7 @@ public class LocalSession {
         String[] split = text.split("\\|", 2);
         if (split.length > 1 && split[0].equalsIgnoreCase("v")) { // enough fields and right message
             if (split[1].length() > 4) {
-                this.failedCuiAttempts ++;
+                this.failedCuiAttempts++;
                 return;
             }
 
@@ -892,7 +914,7 @@ public class LocalSession {
                 version = Integer.parseInt(split[1]);
             } catch (NumberFormatException e) {
                 WorldEdit.logger.warn("Error while reading CUI init message: " + e.getMessage());
-                this.failedCuiAttempts ++;
+                this.failedCuiAttempts++;
                 return;
             }
             setCUISupport(true);
@@ -920,7 +942,7 @@ public class LocalSession {
     }
 
     /**
-     * Gets the client's CUI protocol version
+     * Gets the client's CUI protocol version.
      *
      * @return the CUI version
      */
@@ -929,7 +951,7 @@ public class LocalSession {
     }
 
     /**
-     * Sets the client's CUI protocol version
+     * Sets the client's CUI protocol version.
      *
      * @param cuiVersion the CUI version
      */
@@ -976,17 +998,15 @@ public class LocalSession {
         }
 
         // Create an edit session
-        EditSession editSession;
+        EditSessionBuilder builder = WorldEdit.getInstance().newEditSessionBuilder()
+            .world(world)
+            .actor(actor)
+            .maxBlocks(getBlockChangeLimit())
+            .tracing(isTracingActions());
         if (actor.isPlayer() && actor instanceof Player) {
-            BlockBag blockBag = getBlockBag((Player) actor);
-            editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(
-                    world,
-                    getBlockChangeLimit(), blockBag, actor
-            );
-        } else {
-            editSession = WorldEdit.getInstance().getEditSessionFactory()
-                    .getEditSession(world, getBlockChangeLimit());
+            builder.blockBag(getBlockBag((Player) actor));
         }
+        EditSession editSession = builder.build();
         Request.request().setEditSession(editSession);
 
         editSession.setMask(mask);
@@ -1014,7 +1034,7 @@ public class LocalSession {
     }
 
     /**
-     * Sets the side effect applier for this session
+     * Sets the side effect applier for this session.
      *
      * @param sideEffectSet the side effect applier
      */
@@ -1079,7 +1099,7 @@ public class LocalSession {
     }
 
     /**
-     * Get the preferred wand item for this user, or {@code null} to use the default
+     * Get the preferred wand item for this user, or {@code null} to use the default.
      * @return item id of wand item, or {@code null}
      */
     public String getWandItem() {
@@ -1087,7 +1107,7 @@ public class LocalSession {
     }
 
     /**
-     * Get the preferred navigation wand item for this user, or {@code null} to use the default
+     * Get the preferred navigation wand item for this user, or {@code null} to use the default.
      * @return item id of nav wand item, or {@code null}
      */
     public String getNavWandItem() {

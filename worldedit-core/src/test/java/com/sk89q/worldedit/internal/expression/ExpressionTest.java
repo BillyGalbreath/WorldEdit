@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.internal.expression;
@@ -285,76 +285,76 @@ class ExpressionTest extends BaseExpressionTest {
     public void testWhile() throws ExpressionException {
         checkTestCase("c=5; a=0; while (c > 0) { ++a; --c; } a", 5);
         checkTestCase("c=5; a=0; do { ++a; --c; } while (c > 0); a", 5);
-        checkTestCase("" +
-            "c=5;" +
-            "a=0;" +
-            "while (c > 0) {" +
-            "   ++a;" +
-            "   --c;" +
-            "   if (c == 1) break;" +
-            "}" +
-            "a", 4);
-        checkTestCase("" +
-            "c=5;" +
-            "a=0;" +
-            "while (c > 0) {" +
-            "   ++a;" +
-            "   if (a < 5) continue;" +
-            "   --c;" +
-            "}" +
-            "a", 9);
-        checkTestCase("" +
-            "c=5;" +
-            "a=0;" +
-            "do {" +
-            "   ++a;" +
-            "   --c;" +
-            "   if (c == 1) break;" +
-            "} while (c > 0);" +
-            "a", 4);
-        checkTestCase("" +
-            "c=5;" +
-            "a=0;" +
-            "do {" +
-            "   ++a;" +
-            "   if (a < 5) continue;" +
-            "   --c;" +
-            "} while (c > 0);" +
-            "a", 9);
+        checkTestCase(""
+            + "c=5;"
+            + "a=0;"
+            + "while (c > 0) {"
+            + "   ++a;"
+            + "   --c;"
+            + "   if (c == 1) break;"
+            + "}"
+            + "a", 4);
+        checkTestCase(""
+            + "c=5;"
+            + "a=0;"
+            + "while (c > 0) {"
+            + "   ++a;"
+            + "   if (a < 5) continue;"
+            + "   --c;"
+            + "}"
+            + "a", 9);
+        checkTestCase(""
+            + "c=5;"
+            + "a=0;"
+            + "do {"
+            + "   ++a;"
+            + "   --c;"
+            + "   if (c == 1) break;"
+            + "} while (c > 0);"
+            + "a", 4);
+        checkTestCase(""
+            + "c=5;"
+            + "a=0;"
+            + "do {"
+            + "   ++a;"
+            + "   if (a < 5) continue;"
+            + "   --c;"
+            + "} while (c > 0);"
+            + "a", 9);
     }
 
     @Test
     public void testFor() throws ExpressionException {
         checkTestCase("a=0; for (i=0; i<5; ++i) { ++a; } a", 5);
         checkTestCase("y=0; for (i=1,5) { y *= 10; y += i; } y", 12345);
-        checkTestCase("" +
-            "a=0;" +
-            "for (c = 5; c > 0; c--) {" +
-            "   ++a;" +
-            "   if (c == 2) break;" +
-            "}" +
-            "a", 4);
-        checkTestCase("" +
-            "a=0;" +
-            "for (c = 5; c > 0; c--) {" +
-            "   if (a > 1) continue;" +
-            "   ++a;" +
-            "}" +
-            "a", 2);
-        checkTestCase("" +
-            "a=0;" +
-            "for (c = 1,5) {" +
-            "   ++a;" +
-            "   if (c == 4) break;" +
-            "}" +
-            "a", 4);
-        checkTestCase("" +
-            "a=0;" +
-            "for (c = 1,5) {" +
-            "   if (a > 1) continue;" +
-            "   ++a;" +
-            "}" +
-            "a", 2);
+        checkTestCase(""
+            + "a=0;"
+            + "for (c = 5; c > 0; c--) {"
+            + "   ++a;"
+            + "   if (c == 2) break;"
+            + "}"
+            + "a", 4);
+        checkTestCase(""
+            + "a=0;"
+            + "for (c = 5; c > 0; c--) {"
+            + "   if (a > 1) continue;"
+            + "   ++a;"
+            + "}"
+            + "a", 2);
+        checkTestCase(""
+            + "a=0;"
+            + "for (c = 1,5) {"
+            + "   ++a;"
+            + "   if (c == 4) break;"
+            + "}"
+            + "a", 4);
+        checkTestCase(""
+            + "a=0;"
+            + "for (c = 1,5) {"
+            + "   if (a > 1) continue;"
+            + "   ++a;"
+            + "}"
+            + "a", 2);
     }
 
     @Test
@@ -371,40 +371,40 @@ class ExpressionTest extends BaseExpressionTest {
 
         // try to continue in a switch :P
         {
-            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval("" +
-                "switch(1) {" +
-                "   case 1: continue;" +
-                "}"));
+            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval(""
+                + "switch(1) {"
+                + "   case 1: continue;"
+                + "}"));
             assertTrue(ex.getMessage().contains("continue in a switch"));
         }
         {
-            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval("" +
-                "switch(1) {" +
-                "   default: continue;" +
-                "}"));
+            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval(""
+                + "switch(1) {"
+                + "   default: continue;"
+                + "}"));
             assertTrue(ex.getMessage().contains("continue in a switch"));
         }
         // duplicate case checks
         {
-            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval("" +
-                "switch(1) {" +
-                "   case 1: 1;" +
-                "   case 1: 1;" +
-                "}"));
+            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval(""
+                + "switch(1) {"
+                + "   case 1: 1;"
+                + "   case 1: 1;"
+                + "}"));
             assertTrue(ex.getMessage().contains("Duplicate cases"));
         }
         {
-            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval("" +
-                "switch(1) {" +
-                "   default: 1;" +
-                "   default: 1;" +
-                "}"));
+            EvaluationException ex = assertThrows(EvaluationException.class, () -> simpleEval(""
+                + "switch(1) {"
+                + "   default: 1;"
+                + "   default: 1;"
+                + "}"));
             assertTrue(ex.getMessage().contains("Duplicate default cases"));
         }
     }
 
     @Test
-    public void testQuery() throws Exception {
+    public void testQuery() {
         checkTestCase("a=1;b=2;query(3,4,5,a,b); a==3 && b==4", 1);
         checkTestCase("a=1;b=2;queryAbs(3,4,5,a*1,b*1); a==1 && b==2", 1);
         checkTestCase("a=1;b=2;queryRel(3,4,5,(a),(b)); a==300 && b==400", 1);

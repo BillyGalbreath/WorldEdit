@@ -3,29 +3,26 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extent.clipboard;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.util.Location;
@@ -39,8 +36,9 @@ import com.sk89q.worldedit.world.block.BlockTypes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Stores block data as a multi-dimensional array of {@link BaseBlock}s and
@@ -51,7 +49,7 @@ public class BlockArrayClipboard implements Clipboard {
     private final Region region;
     private BlockVector3 origin;
     private final BaseBlock[][][] blocks;
-    private BiomeType[][] biomes = null;
+    private BiomeType[][][] biomes = null;
     private final List<ClipboardEntity> entities = new ArrayList<>();
 
     /**
@@ -167,11 +165,11 @@ public class BlockArrayClipboard implements Clipboard {
     }
 
     @Override
-    public BiomeType getBiome(BlockVector2 position) {
+    public BiomeType getBiome(BlockVector3 position) {
         if (biomes != null
-                && position.containedWithin(getMinimumPoint().toBlockVector2(), getMaximumPoint().toBlockVector2())) {
-            BlockVector2 v = position.subtract(region.getMinimumPoint().toBlockVector2());
-            BiomeType biomeType = biomes[v.getBlockX()][v.getBlockZ()];
+                && position.containedWithin(getMinimumPoint(), getMaximumPoint())) {
+            BlockVector3 v = position.subtract(region.getMinimumPoint());
+            BiomeType biomeType = biomes[v.getBlockX()][v.getBlockY()][v.getBlockZ()];
             if (biomeType != null) {
                 return biomeType;
             }
@@ -181,13 +179,13 @@ public class BlockArrayClipboard implements Clipboard {
     }
 
     @Override
-    public boolean setBiome(BlockVector2 position, BiomeType biome) {
-        if (position.containedWithin(getMinimumPoint().toBlockVector2(), getMaximumPoint().toBlockVector2())) {
-            BlockVector2 v = position.subtract(region.getMinimumPoint().toBlockVector2());
+    public boolean setBiome(BlockVector3 position, BiomeType biome) {
+        if (position.containedWithin(getMinimumPoint(), getMaximumPoint())) {
+            BlockVector3 v = position.subtract(region.getMinimumPoint());
             if (biomes == null) {
-                biomes = new BiomeType[region.getWidth()][region.getLength()];
+                biomes = new BiomeType[region.getWidth()][region.getHeight()][region.getLength()];
             }
-            biomes[v.getBlockX()][v.getBlockZ()] = biome;
+            biomes[v.getBlockX()][v.getBlockY()][v.getBlockZ()] = biome;
             return true;
         }
         return false;

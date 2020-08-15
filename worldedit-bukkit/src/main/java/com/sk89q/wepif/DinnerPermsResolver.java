@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.wepif;
@@ -48,21 +48,25 @@ public class DinnerPermsResolver implements PermissionsResolver {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean hasPermission(String name, String permission) {
         return hasPermission(server.getOfflinePlayer(name), permission);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean hasPermission(String worldName, String name, String permission) {
         return hasPermission(worldName, server.getOfflinePlayer(name), permission);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean inGroup(String name, String group) {
         return inGroup(server.getOfflinePlayer(name), group);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public String[] getGroups(String name) {
         return getGroups(server.getOfflinePlayer(name));
     }
@@ -78,6 +82,8 @@ public class DinnerPermsResolver implements PermissionsResolver {
                 return false;
             case 1:
                 return true;
+            default:
+                break;
         }
         int dotPos = permission.lastIndexOf(".");
         while (dotPos > -1) {
@@ -86,6 +92,8 @@ public class DinnerPermsResolver implements PermissionsResolver {
                     return false;
                 case 1:
                     return true;
+                default:
+                    break;
             }
             dotPos = permission.lastIndexOf(".", dotPos - 1);
         }
@@ -126,19 +134,23 @@ public class DinnerPermsResolver implements PermissionsResolver {
     }
 
     public Permissible getPermissible(OfflinePlayer offline) {
-        if (offline == null) return null;
+        if (offline == null) {
+            return null;
+        }
         Permissible perm = null;
         if (offline instanceof Permissible) {
             perm = (Permissible) offline;
         } else {
             Player player = offline.getPlayer();
-            if (player != null) perm = player;
+            if (player != null) {
+                perm = player;
+            }
         }
         return perm;
     }
 
     /**
-     * Checks the permission from dinnerperms
+     * Checks the permission from dinnerperms.
      *
      * @param perms      Permissible to check for
      * @param permission The permission to check

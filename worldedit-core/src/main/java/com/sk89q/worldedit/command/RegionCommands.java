@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command;
@@ -41,7 +41,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.function.visitor.LayerVisitor;
 import com.sk89q.worldedit.function.visitor.RegionVisitor;
-import com.sk89q.worldedit.internal.annotation.Direction;
+import com.sk89q.worldedit.internal.annotation.Offset;
 import com.sk89q.worldedit.internal.annotation.Selection;
 import com.sk89q.worldedit.internal.expression.ExpressionException;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -55,11 +55,12 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionOperationException;
 import com.sk89q.worldedit.util.TreeGenerator.TreeType;
-import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.util.formatting.component.TextUtils;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
+import com.sk89q.worldedit.world.RegenOptions;
+import com.sk89q.worldedit.world.World;
 import org.enginehub.piston.annotation.Command;
 import org.enginehub.piston.annotation.CommandContainer;
 import org.enginehub.piston.annotation.param.Arg;
@@ -298,11 +299,11 @@ public class RegionCommands {
     @Logging(ORIENTATION_REGION)
     public int move(Actor actor, World world, EditSession editSession, LocalSession session,
                     @Selection Region region,
-                    @Arg(desc = "# of blocks to move", def = "1")
-                        int count,
-                    @Arg(desc = "The direction to move", def = Direction.AIM)
-                    @Direction(includeDiagonals = true)
-                        BlockVector3 direction,
+                    @Arg(desc = "number of times to apply the offset", def = "1")
+                        int multiplier,
+                    @Arg(desc = "The offset to move", def = Offset.FORWARD)
+                    @Offset
+                        BlockVector3 offset,
                     @Arg(desc = "The pattern of blocks to leave", def = "air")
                         Pattern replace,
                     @Switch(name = 's', desc = "Shift the selection to the target location")
@@ -315,7 +316,7 @@ public class RegionCommands {
                         boolean copyBiomes,
                     @ArgFlag(name = 'm', desc = "Set the include mask, non-matching blocks become air")
                         Mask mask) throws WorldEditException {
-        checkCommandArgument(count >= 1, "Count must be >= 1");
+        checkCommandArgument(multiplier >= 1, "Multiplier must be >= 1");
 
         Mask combinedMask;
         if (ignoreAirBlocks) {
@@ -328,11 +329,11 @@ public class RegionCommands {
             combinedMask = mask;
         }
 
-        int affected = editSession.moveRegion(region, direction, count, copyEntities, copyBiomes, combinedMask, replace);
+        int affected = editSession.moveRegion(region, offset, multiplier, copyEntities, copyBiomes, combinedMask, replace);
 
         if (moveSelection) {
             try {
-                region.shift(direction.multiply(count));
+                region.shift(offset.multiply(multiplier));
 
                 session.getRegionSelector(world).learnChanges();
                 session.getRegionSelector(world).explainRegionAdjust(actor, session);
@@ -355,9 +356,9 @@ public class RegionCommands {
                      @Selection Region region,
                      @Arg(desc = "# of copies to stack", def = "1")
                          int count,
-                     @Arg(desc = "The direction to stack", def = Direction.AIM)
-                     @Direction(includeDiagonals = true)
-                         BlockVector3 direction,
+                     @Arg(desc = "How far to move the contents each stack", def = Offset.FORWARD)
+                     @Offset
+                         BlockVector3 offset,
                      @Switch(name = 's', desc = "Shift the selection to the last stacked copy")
                          boolean moveSelection,
                      @Switch(name = 'a', desc = "Ignore air blocks")
@@ -380,13 +381,13 @@ public class RegionCommands {
             combinedMask = mask;
         }
 
-        int affected = editSession.stackCuboidRegion(region, direction, count, copyEntities, copyBiomes, combinedMask);
+        int affected = editSession.stackCuboidRegion(region, offset, count, copyEntities, copyBiomes, combinedMask);
 
         if (moveSelection) {
             try {
                 final BlockVector3 size = region.getMaximumPoint().subtract(region.getMinimumPoint()).add(1, 1, 1);
 
-                final BlockVector3 shiftVector = direction.multiply(size).multiply(count);
+                final BlockVector3 shiftVector = offset.multiply(size).multiply(count);
                 region.shift(shiftVector);
 
                 session.getRegionSelector(world).learnChanges();
@@ -406,13 +407,21 @@ public class RegionCommands {
     )
     @CommandPermissions("worldedit.regen")
     @Logging(REGION)
-    public void regenerateChunk(Actor actor, World world, LocalSession session,
-            EditSession editSession, @Selection Region region) throws WorldEditException {
+    void regenerate(Actor actor, World world, LocalSession session, EditSession editSession,
+                    @Selection Region region,
+                    @Arg(desc = "The seed to regenerate with, otherwise uses world seed", def = "")
+                        Long seed,
+                    @Switch(name = 'b', desc = "Regenerate biomes as well")
+                        boolean regenBiomes) {
         Mask mask = session.getMask();
         boolean success;
         try {
             session.setMask(null);
-            success = world.regenerate(region, editSession);
+            RegenOptions options = RegenOptions.builder()
+                .seed(seed)
+                .regenBiomes(regenBiomes)
+                .build();
+            success = world.regenerate(region, editSession, options);
         } finally {
             session.setMask(mask);
         }
@@ -426,9 +435,9 @@ public class RegionCommands {
     @Command(
         name = "/deform",
         desc = "Deforms a selected region with an expression",
-        descFooter = "The expression is executed for each block and is expected\n" +
-            "to modify the variables x, y and z to point to a new block\n" +
-            "to fetch. See also https://tinyurl.com/weexpr"
+        descFooter = "The expression is executed for each block and is expected\n"
+            + "to modify the variables x, y and z to point to a new block\n"
+            + "to fetch. See also https://tinyurl.com/weexpr"
     )
     @CommandPermissions("worldedit.region.deform")
     @Logging(ALL)
@@ -438,8 +447,10 @@ public class RegionCommands {
                           List<String> expression,
                       @Switch(name = 'r', desc = "Use the game's coordinate origin")
                           boolean useRawCoords,
-                      @Switch(name = 'o', desc = "Use the selection's center as origin")
-                          boolean offset) throws WorldEditException {
+                      @Switch(name = 'o', desc = "Use the placement's coordinate origin")
+                          boolean offset,
+                      @Switch(name = 'c', desc = "Use the selection's center as origin")
+                          boolean offsetCenter) throws WorldEditException {
         final Vector3 zero;
         Vector3 unit;
 
@@ -449,6 +460,12 @@ public class RegionCommands {
         } else if (offset) {
             zero = session.getPlacementPosition(actor).toVector3();
             unit = Vector3.ONE;
+        } else if (offsetCenter) {
+            final Vector3 min = region.getMinimumPoint().toVector3();
+            final Vector3 max = region.getMaximumPoint().toVector3();
+
+            zero = max.add(min).multiply(0.5);
+            unit = Vector3.ONE;
         } else {
             final Vector3 min = region.getMinimumPoint().toVector3();
             final Vector3 max = region.getMaximumPoint().toVector3();
@@ -456,9 +473,15 @@ public class RegionCommands {
             zero = max.add(min).divide(2);
             unit = max.subtract(zero);
 
-            if (unit.getX() == 0) unit = unit.withX(1.0);
-            if (unit.getY() == 0) unit = unit.withY(1.0);
-            if (unit.getZ() == 0) unit = unit.withZ(1.0);
+            if (unit.getX() == 0) {
+                unit = unit.withX(1.0);
+            }
+            if (unit.getY() == 0) {
+                unit = unit.withY(1.0);
+            }
+            if (unit.getZ() == 0) {
+                unit = unit.withZ(1.0);
+            }
         }
 
         try {

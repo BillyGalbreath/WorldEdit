@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command;
@@ -36,12 +36,15 @@ import com.sk89q.worldedit.command.tool.LongRangeBuildTool;
 import com.sk89q.worldedit.command.tool.NavigationWand;
 import com.sk89q.worldedit.command.tool.QueryTool;
 import com.sk89q.worldedit.command.tool.SelectionWand;
+import com.sk89q.worldedit.command.tool.StackTool;
 import com.sk89q.worldedit.command.tool.Tool;
 import com.sk89q.worldedit.command.tool.TreePlanter;
 import com.sk89q.worldedit.command.util.CommandPermissions;
 import com.sk89q.worldedit.command.util.CommandPermissionsConditionGenerator;
+import com.sk89q.worldedit.command.util.SubCommandPermissionCondition;
 import com.sk89q.worldedit.command.util.PermissionCondition;
 import com.sk89q.worldedit.entity.Player;
+import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.internal.command.CommandRegistrationHandler;
 import com.sk89q.worldedit.internal.command.CommandUtil;
@@ -51,6 +54,7 @@ import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
+import com.sk89q.worldedit.world.item.ItemType;
 import org.enginehub.piston.CommandManager;
 import org.enginehub.piston.CommandManagerService;
 import org.enginehub.piston.CommandMetadata;
@@ -85,14 +89,19 @@ public class ToolCommands {
             .collect(Collectors.toSet());
         for (org.enginehub.piston.Command command : commands) {
             if (command.getAliases().contains("unbind")) {
-                // Don't register new /tool unbind alias
+                // Don't register new /tool <whatever> alias
                 command = command.toBuilder().aliases(
                     Collections2.filter(command.getAliases(), alias -> !"unbind".equals(alias))
                 ).build();
             }
+            if (command.getName().equals("stacker")) {
+                // Don't register /stacker
+                continue;
+            }
             commandManager.register(CommandUtil.deprecate(
-                command, "Global tool names cause conflicts " +
-                "and will be removed in WorldEdit 8", ToolCommands::asNonGlobal
+                command, "Global tool names cause conflicts "
+                    + "and will be removed in WorldEdit 8",
+                CommandUtil.ReplacementMessageGenerator.forNewCommand(ToolCommands::asNonGlobal)
             ));
         }
 
@@ -114,6 +123,8 @@ public class ToolCommands {
                 .required()
                 .build());
             command.description(TextComponent.of("Binds a tool to the item in your hand"));
+
+            command.condition(new SubCommandPermissionCondition.Generator(nonGlobalCommands).build());
         });
     }
 
@@ -128,8 +139,16 @@ public class ToolCommands {
 
     static void setToolNone(Player player, LocalSession session, boolean isBrush)
         throws InvalidToolBindException {
-        session.setTool(player.getItemInHand(HandSide.MAIN_HAND).getType(), null);
-        player.printInfo(TranslatableComponent.of(isBrush ? "worldedit.brush.none.equip" : "worldedit.tool.none.equip"));
+        ItemType type = player.getItemInHand(HandSide.MAIN_HAND).getType();
+        boolean set = session.getTool(type) != null
+            || type.getId().equals(session.getWandItem())
+            || type.getId().equals(session.getNavWandItem());
+        if (set) {
+            session.setTool(type, null);
+            player.printInfo(TranslatableComponent.of(isBrush ? "worldedit.brush.none.equip" : "worldedit.tool.none.equip"));
+        } else {
+            player.printInfo(TranslatableComponent.of("worldedit.tool.none.to.unequip"));
+        }
     }
 
     private static void setTool(Player player, LocalSession session, Tool tool,
@@ -196,6 +215,19 @@ public class ToolCommands {
     }
 
     @Command(
+        name = "stacker",
+        desc = "Block stacker tool"
+    )
+    @CommandPermissions("worldedit.tool.stack")
+    public void stacker(Player player, LocalSession session,
+                        @Arg(desc = "The max range of the stack", def = "10")
+                            int range,
+                        @Arg(desc = "The mask to stack until", def = "!#existing")
+                            Mask mask) throws WorldEditException {
+        setTool(player, session, new StackTool(range, mask), "worldedit.tool.stack.equip");
+    }
+
+    @Command(
         name = "repl",
         desc = "Block replacer tool"
     )
@@ -230,7 +262,7 @@ public class ToolCommands {
         LocalConfiguration config = we.getConfiguration();
 
         if (range > config.maxSuperPickaxeSize) {
-            player.printError(TranslatableComponent.of("worldedit.superpickaxe.max-range", TextComponent.of(config.maxSuperPickaxeSize)));
+            player.printError(TranslatableComponent.of("worldedit.tool.superpickaxe.max-range", TextComponent.of(config.maxSuperPickaxeSize)));
             return;
         }
         setTool(player, session, new FloodFillTool(range, pattern), "worldedit.tool.floodfill.equip");

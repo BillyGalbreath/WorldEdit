@@ -1,22 +1,23 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.common.util.RunConfig
-import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.mcp.task.GenerateSRG
+import net.minecraftforge.gradle.userdev.UserDevExtension
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 
 plugins {
     id("net.minecraftforge.gradle")
+    `java-library`
 }
 
 applyPlatformAndCoreConfiguration()
 applyShadowConfiguration()
 
-val minecraftVersion = "1.15.2"
+val minecraftVersion = "1.16.2"
 val nextMajorMinecraftVersion: String = minecraftVersion.split('.').let { (useless, major) ->
     "$useless.${major.toInt() + 1}"
 }
-val mappingsMinecraftVersion = "1.15.1"
-val forgeVersion = "31.0.14"
+val mappingsMinecraftVersion = "1.16"
+val forgeVersion = "33.0.3"
 
 configurations.all {
     resolutionStrategy {
@@ -25,8 +26,8 @@ configurations.all {
 }
 
 dependencies {
-    "compile"(project(":worldedit-core"))
-    "compile"("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
+    "api"(project(":worldedit-core"))
+    "implementation"("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
 
     "minecraft"("net.minecraftforge:forge:$minecraftVersion-$forgeVersion")
 }
@@ -34,7 +35,7 @@ dependencies {
 configure<UserDevExtension> {
     mappings(mapOf(
             "channel" to "snapshot",
-            "version" to "20200201-$mappingsMinecraftVersion"
+            "version" to "20200514-$mappingsMinecraftVersion"
     ))
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))

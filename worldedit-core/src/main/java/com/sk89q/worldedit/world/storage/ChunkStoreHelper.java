@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.storage;
@@ -25,10 +25,12 @@ import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.extension.platform.Capability;
 import com.sk89q.worldedit.extension.platform.Platform;
+import com.sk89q.worldedit.internal.Constants;
 import com.sk89q.worldedit.world.DataException;
 import com.sk89q.worldedit.world.DataFixer;
 import com.sk89q.worldedit.world.chunk.AnvilChunk;
 import com.sk89q.worldedit.world.chunk.AnvilChunk13;
+import com.sk89q.worldedit.world.chunk.AnvilChunk16;
 import com.sk89q.worldedit.world.chunk.Chunk;
 import com.sk89q.worldedit.world.chunk.OldChunk;
 
@@ -59,11 +61,6 @@ public class ChunkStoreHelper {
     }
 
     /**
-     * The DataVersion for Minecraft 1.13
-     */
-    private static final int DATA_VERSION_MC_1_13 = 1519;
-
-    /**
      * Convert a chunk NBT tag into a {@link Chunk} implementation.
      *
      * @param rootTag the root tag of the chunk
@@ -91,16 +88,22 @@ public class ChunkStoreHelper {
         }
 
         int dataVersion = rootTag.getInt("DataVersion");
-        if (dataVersion == 0) dataVersion = -1;
+        if (dataVersion == 0) {
+            dataVersion = -1;
+        }
         final Platform platform = WorldEdit.getInstance().getPlatformManager().queryCapability(Capability.WORLD_EDITING);
         final int currentDataVersion = platform.getDataVersion();
-        if (tag.getValue().containsKey("Sections") &&  dataVersion < currentDataVersion) { // only fix up MCA format, DFU doesn't support MCR chunks
+        if (tag.getValue().containsKey("Sections") && dataVersion < currentDataVersion) { // only fix up MCA format, DFU doesn't support MCR chunks
             final DataFixer dataFixer = platform.getDataFixer();
             if (dataFixer != null) {
-                return new AnvilChunk13((CompoundTag) dataFixer.fixUp(DataFixer.FixTypes.CHUNK, rootTag, dataVersion).getValue().get("Level"));
+                tag = (CompoundTag) dataFixer.fixUp(DataFixer.FixTypes.CHUNK, rootTag, dataVersion).getValue().get("Level");
+                dataVersion = currentDataVersion;
             }
         }
-        if (dataVersion >= DATA_VERSION_MC_1_13) {
+        if (dataVersion >= Constants.DATA_VERSION_MC_1_16) {
+            return new AnvilChunk16(tag);
+        }
+        if (dataVersion >= Constants.DATA_VERSION_MC_1_13) {
             return new AnvilChunk13(tag);
         }
 

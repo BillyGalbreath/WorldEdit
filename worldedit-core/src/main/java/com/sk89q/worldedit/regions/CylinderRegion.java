@@ -3,36 +3,39 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.sk89q.worldedit.extent.Extent;
-import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.BlockVector2;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector2;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.math.geom.Polygons;
 import com.sk89q.worldedit.regions.iterator.FlatRegion3DIterator;
 import com.sk89q.worldedit.regions.iterator.FlatRegionIterator;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.World;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Represents a cylindrical region.
@@ -46,7 +49,7 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
     private boolean hasY = false;
 
     /**
-     * Construct the region
+     * Construct the region.
      */
     public CylinderRegion() {
         this((World) null);
@@ -108,7 +111,7 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
     }
 
     /**
-     * Sets the main center point of the region
+     * Sets the main center point of the region.
      *
      * @param center the center point
      */
@@ -117,7 +120,7 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
     }
 
     /**
-     * Returns the radius of the cylinder
+     * Returns the radius of the cylinder.
      *
      * @return the radius along the X and Z axes
      */
@@ -126,7 +129,7 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
     }
 
     /**
-     * Sets the radius of the cylinder
+     * Sets the radius of the cylinder.
      *
      * @param radius the radius along the X and Z axes
      */
@@ -135,7 +138,7 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
     }
 
     /**
-     * Extends the radius to be at least the given radius
+     * Extends the radius to be at least the given radius.
      *
      * @param minRadius the minimum radius
      */
@@ -183,9 +186,16 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
         return minY;
     }
 
+    private static final BigDecimal PI = BigDecimal.valueOf(Math.PI);
+
     @Override
-    public int getArea() {
-        return (int) Math.floor(radius.getX() * radius.getZ() * Math.PI * getHeight());
+    public long getVolume() {
+        return BigDecimal.valueOf(radius.getX())
+                .multiply(BigDecimal.valueOf(radius.getZ()))
+                .multiply(PI)
+                .multiply(BigDecimal.valueOf(getHeight()))
+                .setScale(0, RoundingMode.FLOOR)
+                .longValue();
     }
 
     @Override
@@ -210,7 +220,7 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
         }
 
         if ((diff.getBlockX() & 1) + (diff.getBlockZ() & 1) != 0) {
-            throw new RegionOperationException("Cylinders changes must be even for each horizontal dimensions.");
+            throw new RegionOperationException(TranslatableComponent.of("worldedit.selection.cylinder.error.even-horizontal"));
         }
 
         return diff.divide(2).floor();
@@ -225,13 +235,6 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
         return total.divide(2).floor();
     }
 
-    /**
-     * Expand the region.
-     * Expand the region.
-     *
-     * @param changes array/arguments with multiple related changes
-     * @throws RegionOperationException
-     */
     @Override
     public void expand(BlockVector3... changes) throws RegionOperationException {
         center = center.add(calculateDiff2D(changes));
@@ -246,12 +249,6 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
         }
     }
 
-    /**
-     * Contract the region.
-     *
-     * @param changes array/arguments with multiple related changes
-     * @throws RegionOperationException
-     */
     @Override
     public void contract(BlockVector3... changes) throws RegionOperationException {
         center = center.subtract(calculateDiff2D(changes));
@@ -324,12 +321,6 @@ public class CylinderRegion extends AbstractRegion implements FlatRegion {
         return () -> new FlatRegionIterator(CylinderRegion.this);
     }
 
-    /**
-     * Returns string representation in the format
-     * "(centerX, centerZ) - (radiusX, radiusZ) - (minY, maxY)"
-     *
-     * @return string
-     */
     @Override
     public String toString() {
         return center + " - " + radius + "(" + minY + ", " + maxY + ")";

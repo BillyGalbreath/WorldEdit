@@ -3,29 +3,29 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.fabric;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
-
+import com.mojang.brigadier.CommandDispatcher;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.event.platform.PlatformReadyEvent;
+import com.sk89q.worldedit.extension.platform.Capability;
 import com.sk89q.worldedit.extension.platform.Platform;
+import com.sk89q.worldedit.extension.platform.PlatformManager;
 import com.sk89q.worldedit.fabric.net.handler.WECUIPacketHandler;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.biome.BiomeType;
@@ -35,17 +35,18 @@ import com.sk89q.worldedit.world.entity.EntityType;
 import com.sk89q.worldedit.world.item.ItemCategory;
 import com.sk89q.worldedit.world.item.ItemType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
-import net.fabricmc.fabric.api.event.server.ServerStopCallback;
-import net.fabricmc.fabric.api.event.server.ServerTickCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.ItemTags;
@@ -66,6 +67,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.sk89q.worldedit.fabric.FabricAdapter.adaptPlayer;
 
 /**
  * The Fabric implementation of WorldEdit.
@@ -93,11 +97,11 @@ public class FabricWorldEdit implements ModInitializer {
     @Override
     public void onInitialize() {
         this.container = FabricLoader.getInstance().getModContainer("worldedit").orElseThrow(
-                () -> new IllegalStateException("WorldEdit mod missing in Fabric")
+            () -> new IllegalStateException("WorldEdit mod missing in Fabric")
         );
 
         // Setup working directory
-        workingDir = new File(FabricLoader.getInstance().getConfigDirectory(), "worldedit").toPath();
+        workingDir = FabricLoader.getInstance().getConfigDir().resolve("worldedit");
         if (!Files.exists(workingDir)) {
             try {
                 Files.createDirectory(workingDir);
@@ -108,13 +112,32 @@ public class FabricWorldEdit implements ModInitializer {
 
         WECUIPacketHandler.init();
 
-        ServerTickCallback.EVENT.register(ThreadSafeCache.getInstance());
-        ServerStartCallback.EVENT.register(this::onStartServer);
-        ServerStopCallback.EVENT.register(this::onStopServer);
+        ServerTickEvents.END_SERVER_TICK.register(ThreadSafeCache.getInstance());
+        CommandRegistrationCallback.EVENT.register(this::registerCommands);
+        ServerLifecycleEvents.SERVER_STARTED.register(this::onStartServer);
+        ServerLifecycleEvents.SERVER_STOPPING.register(this::onStopServer);
         AttackBlockCallback.EVENT.register(this::onLeftClickBlock);
         UseBlockCallback.EVENT.register(this::onRightClickBlock);
         UseItemCallback.EVENT.register(this::onRightClickAir);
         LOGGER.info("WorldEdit for Fabric (version " + getInternalVersion() + ") is loaded");
+    }
+
+    private void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
+        PlatformManager manager = WorldEdit.getInstance().getPlatformManager();
+        if (manager.getPlatforms().isEmpty()) {
+            // We'll register as part of our platform initialization later.
+            return;
+        }
+
+        // This is a re-register (due to /reload), we must add our commands now
+
+        Platform commandsPlatform = manager.queryCapability(Capability.USER_COMMANDS);
+        if (commandsPlatform != platform || !platform.isHookingEvents()) {
+            // We're not in control of commands/events -- do not re-register.
+            return;
+        }
+        platform.setNativeDispatcher(dispatcher);
+        platform.registerCommands(manager.getPlatformCommandManager().getCommandManager());
     }
 
     private void setupPlatform(MinecraftServer server) {
@@ -125,7 +148,7 @@ public class FabricWorldEdit implements ModInitializer {
         this.provider = new FabricPermissionsProvider.VanillaPermissionsProvider(platform);
     }
 
-    private void setupRegistries() {
+    private void setupRegistries(MinecraftServer server) {
         // Blocks
         for (Identifier name : Registry.BLOCK.getIds()) {
             if (BlockType.REGISTRY.get(name.toString()) == null) {
@@ -146,18 +169,18 @@ public class FabricWorldEdit implements ModInitializer {
             }
         }
         // Biomes
-        for (Identifier name : Registry.BIOME.getIds()) {
+        for (Identifier name : server.getRegistryManager().get(Registry.BIOME_KEY).getIds()) {
             if (BiomeType.REGISTRY.get(name.toString()) == null) {
                 BiomeType.REGISTRY.register(name.toString(), new BiomeType(name.toString()));
             }
         }
         // Tags
-        for (Identifier name : BlockTags.getContainer().getKeys()) {
+        for (Identifier name : BlockTags.getTagGroup().getTagIds()) {
             if (BlockCategory.REGISTRY.get(name.toString()) == null) {
                 BlockCategory.REGISTRY.register(name.toString(), new BlockCategory(name.toString()));
             }
         }
-        for (Identifier name : ItemTags.getContainer().getKeys()) {
+        for (Identifier name : ItemTags.getTagGroup().getTagIds()) {
             if (ItemCategory.REGISTRY.get(name.toString()) == null) {
                 ItemCategory.REGISTRY.register(name.toString(), new ItemCategory(name.toString()));
             }
@@ -165,12 +188,16 @@ public class FabricWorldEdit implements ModInitializer {
     }
 
     private void onStartServer(MinecraftServer minecraftServer) {
+        FabricAdapter.setServer(minecraftServer);
         setupPlatform(minecraftServer);
-        setupRegistries();
+        setupRegistries(minecraftServer);
 
         config = new FabricConfiguration(this);
         config.load();
         WorldEdit.getInstance().getEventBus().post(new PlatformReadyEvent());
+        minecraftServer.reloadResources(
+            minecraftServer.getDataPackManager().getEnabledNames()
+        );
     }
 
     private void onStopServer(MinecraftServer minecraftServer) {
@@ -200,8 +227,9 @@ public class FabricWorldEdit implements ModInitializer {
                 blockPos.getY(),
                 blockPos.getZ()
         );
+        com.sk89q.worldedit.util.Direction weDirection = FabricAdapter.adaptEnumFacing(direction);
 
-        if (we.handleBlockLeftClick(player, pos)) {
+        if (we.handleBlockLeftClick(player, pos, weDirection)) {
             return ActionResult.SUCCESS;
         }
 
@@ -210,12 +238,6 @@ public class FabricWorldEdit implements ModInitializer {
         }
 
         return ActionResult.PASS;
-    }
-
-    public void onLeftClickAir(PlayerEntity playerEntity, World world, Hand hand) {
-        WorldEdit we = WorldEdit.getInstance();
-        FabricPlayer player = adaptPlayer((ServerPlayerEntity) playerEntity);
-        we.handleArmSwing(player);
     }
 
     private ActionResult onRightClickBlock(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHitResult) {
@@ -231,8 +253,9 @@ public class FabricWorldEdit implements ModInitializer {
                 blockHitResult.getBlockPos().getY(),
                 blockHitResult.getBlockPos().getZ()
         );
+        com.sk89q.worldedit.util.Direction direction = FabricAdapter.adaptEnumFacing(blockHitResult.getSide());
 
-        if (we.handleBlockRightClick(player, pos)) {
+        if (we.handleBlockRightClick(player, pos, direction)) {
             return ActionResult.SUCCESS;
         }
 
@@ -306,8 +329,8 @@ public class FabricWorldEdit implements ModInitializer {
      *
      * @return the working directory
      */
-    public File getWorkingDir() {
-        return this.workingDir.toFile();
+    public Path getWorkingDir() {
+        return this.workingDir;
     }
 
     /**

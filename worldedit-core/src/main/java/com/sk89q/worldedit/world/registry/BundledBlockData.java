@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.registry;
@@ -25,19 +25,20 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.extension.platform.Capability;
+import com.sk89q.worldedit.internal.Constants;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.util.gson.VectorAdapter;
 import com.sk89q.worldedit.util.io.ResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * Provides block data based on the built-in block database that is bundled
@@ -82,9 +83,11 @@ public final class BundledBlockData {
         Gson gson = gsonBuilder.create();
         URL url = null;
         final int dataVersion = WorldEdit.getInstance().getPlatformManager().queryCapability(Capability.WORLD_EDITING).getDataVersion();
-        if (dataVersion > 2224) { // > MC 1.14
+        if (dataVersion >= Constants.DATA_VERSION_MC_1_16) {
+            url = resourceLoader.getResource(BundledBlockData.class, "blocks.116.json");
+        } else if (dataVersion >= Constants.DATA_VERSION_MC_1_15) {
             url = resourceLoader.getResource(BundledBlockData.class, "blocks.115.json");
-        } else if (dataVersion > 1900) { // > MC 1.13
+        } else if (dataVersion >= Constants.DATA_VERSION_MC_1_14) {
             url = resourceLoader.getResource(BundledBlockData.class, "blocks.114.json");
         }
         if (url == null) {
@@ -148,7 +151,7 @@ public final class BundledBlockData {
     public static class BlockEntry {
         private String id;
         public String localizedName;
-        private SimpleBlockMaterial material = new SimpleBlockMaterial();
+        private final SimpleBlockMaterial material = new SimpleBlockMaterial();
     }
 
 }

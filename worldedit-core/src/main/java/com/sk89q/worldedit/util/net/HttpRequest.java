@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.util.net;
@@ -153,8 +153,9 @@ public class HttpRequest implements Closeable {
                 out.close();
             }
 
-            inputStream = conn.getResponseCode() == HttpURLConnection.HTTP_OK ?
-                    conn.getInputStream() : conn.getErrorStream();
+            inputStream = conn.getResponseCode() == HttpURLConnection.HTTP_OK
+                ? conn.getInputStream()
+                : conn.getErrorStream();
 
             successful = true;
         } finally {
@@ -295,8 +296,10 @@ public class HttpRequest implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
-        if (conn != null) conn.disconnect();
+    public void close() {
+        if (conn != null) {
+            conn.disconnect();
+        }
     }
 
     /**
@@ -370,7 +373,7 @@ public class HttpRequest implements Closeable {
     /**
      * Used with {@link #bodyForm(Form)}.
      */
-    public final static class Form {
+    public static final class Form {
         public final List<String> elements = new ArrayList<>();
 
         private Form() {
@@ -385,8 +388,8 @@ public class HttpRequest implements Closeable {
          */
         public Form add(String key, String value) {
             try {
-                elements.add(URLEncoder.encode(key, "UTF-8") +
-                        "=" + URLEncoder.encode(value, "UTF-8"));
+                elements.add(URLEncoder.encode(key, "UTF-8")
+                    + "=" + URLEncoder.encode(value, "UTF-8"));
                 return this;
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);

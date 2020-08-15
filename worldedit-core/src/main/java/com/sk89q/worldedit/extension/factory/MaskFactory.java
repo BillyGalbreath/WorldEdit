@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extension.factory;
@@ -39,6 +39,8 @@ import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.mask.MaskIntersection;
 import com.sk89q.worldedit.internal.registry.AbstractFactory;
 import com.sk89q.worldedit.internal.registry.InputParser;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +82,9 @@ public final class MaskFactory extends AbstractFactory<Mask> {
         final String[] split = input.split(" ");
         if (split.length > 1) {
             String prev = input.substring(0, input.lastIndexOf(" ")) + " ";
-            return super.getSuggestions(split[split.length -1]).stream().map(s -> prev + s).collect(Collectors.toList());
+            return super.getSuggestions(split[split.length - 1]).stream()
+                .map(s -> prev + s)
+                .collect(Collectors.toList());
         }
         return super.getSuggestions(input);
     }
@@ -94,18 +98,23 @@ public final class MaskFactory extends AbstractFactory<Mask> {
                 continue;
             }
 
+            Mask match = null;
             for (InputParser<Mask> parser : getParsers()) {
-                Mask match = parser.parseFromInput(component, context);
+                match = parser.parseFromInput(component, context);
 
                 if (match != null) {
-                    masks.add(match);
+                    break;
                 }
             }
+            if (match == null) {
+                throw new NoMatchException(TranslatableComponent.of("worldedit.error.no-match", TextComponent.of(component)));
+            }
+            masks.add(match);
         }
 
         switch (masks.size()) {
             case 0:
-                throw new NoMatchException("No match for '" + input + "'");
+                throw new NoMatchException(TranslatableComponent.of("worldedit.error.no-match", TextComponent.of(input)));
             case 1:
                 return masks.get(0);
             default:

@@ -3,27 +3,26 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extent.clipboard.io.legacycompat;
 
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.Tag;
-import com.sk89q.worldedit.registry.state.DirectionalProperty;
-import com.sk89q.worldedit.registry.state.EnumProperty;
 import com.sk89q.worldedit.registry.state.Property;
+import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldedit.world.block.BlockType;
@@ -31,23 +30,24 @@ import com.sk89q.worldedit.world.block.BlockTypes;
 
 import java.util.Map;
 
+@SuppressWarnings("")
 public class BedBlockCompatibilityHandler implements NBTCompatibilityHandler {
 
-    private static final DirectionalProperty FacingProperty;
-    private static final EnumProperty PartProperty;
+    private static final Property<Direction> FACING_PROPERTY;
+    private static final Property<String> PART_PROPERTY;
 
     static {
-        DirectionalProperty tempFacing;
-        EnumProperty tempPart;
+        Property<Direction> tempFacing;
+        Property<String> tempPart;
         try {
-            tempFacing = (DirectionalProperty) (Property<?>) BlockTypes.RED_BED.getProperty("facing");
-            tempPart = (EnumProperty) (Property<?>) BlockTypes.RED_BED.getProperty("part");
+            tempFacing = BlockTypes.RED_BED.getProperty("facing");
+            tempPart = BlockTypes.RED_BED.getProperty("part");
         } catch (NullPointerException | IllegalArgumentException | ClassCastException e) {
             tempFacing = null;
             tempPart = null;
         }
-        FacingProperty = tempFacing;
-        PartProperty = tempPart;
+        FACING_PROPERTY = tempFacing;
+        PART_PROPERTY = tempPart;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class BedBlockCompatibilityHandler implements NBTCompatibilityHandler {
     }
 
     @Override
-    public <B extends BlockStateHolder<B>> B updateNBT(B block, Map<String, Tag> values) {
+    public <B extends BlockStateHolder<B>> BlockStateHolder<?> updateNBT(B block, Map<String, Tag> values) {
         Tag typeTag = values.get("color");
         if (typeTag instanceof IntTag) {
             String bedType = convertBedType(((IntTag) typeTag).getValue());
@@ -65,17 +65,17 @@ public class BedBlockCompatibilityHandler implements NBTCompatibilityHandler {
                 if (type != null) {
                     BlockState state = type.getDefaultState();
 
-                    Property facingProp = type.getProperty("facing");
-                    state = state.with(facingProp, block.getState(FacingProperty));
+                    Property<Direction> facingProp = type.getProperty("facing");
+                    state = state.with(facingProp, block.getState(FACING_PROPERTY));
 
-                    Property occupiedProp = type.getProperty("occupied");
+                    Property<Boolean> occupiedProp = type.getProperty("occupied");
                     state = state.with(occupiedProp, false);
 
-                    Property partProp = type.getProperty("part");
-                    state = state.with(partProp, block.getState(PartProperty));
+                    Property<String> partProp = type.getProperty("part");
+                    state = state.with(partProp, block.getState(PART_PROPERTY));
 
                     values.remove("color");
-                    return (B) state;
+                    return state;
                 }
             }
         }

@@ -3,29 +3,28 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.inventory.BlockBag;
-import com.sk89q.worldedit.util.eventbus.EventBus;
 import com.sk89q.worldedit.world.World;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Creates new {@link EditSession}s. To get an instance of this factory,
@@ -34,7 +33,11 @@ import com.sk89q.worldedit.world.World;
  * <p>It is no longer possible to replace the instance of this in WorldEdit
  * with a custom one. Use {@link EditSessionEvent} to override
  * the creation of {@link EditSession}s.</p>
+ *
+ * @deprecated Using the ever-extending factory methods is deprecated. Replace with {@link EditSessionBuilder},
+ *     which in most cases will be as simple as calling {@code builder.world(world).build()}.
  */
+@Deprecated
 public class EditSessionFactory {
 
     /**
@@ -138,16 +141,10 @@ public class EditSessionFactory {
      */
     static final class EditSessionFactoryImpl extends EditSessionFactory {
 
-        private final EventBus eventBus;
-
         /**
          * Create a new factory.
-         *
-         * @param eventBus the event bus
          */
-        EditSessionFactoryImpl(EventBus eventBus) {
-            checkNotNull(eventBus);
-            this.eventBus = eventBus;
+        EditSessionFactoryImpl() {
         }
 
         @Override
@@ -167,10 +164,12 @@ public class EditSessionFactory {
 
         @Override
         public EditSession getEditSession(World world, int maxBlocks, BlockBag blockBag, Actor actor) {
-            if (WorldEdit.getInstance().getConfiguration().traceUnflushedSessions) {
-                return new TracedEditSession(eventBus, world, maxBlocks, blockBag, new EditSessionEvent(world, actor, maxBlocks, null));
-            }
-            return new EditSession(eventBus, world, maxBlocks, blockBag, new EditSessionEvent(world, actor, maxBlocks, null));
+            return WorldEdit.getInstance().newEditSessionBuilder()
+                .world(world)
+                .maxBlocks(maxBlocks)
+                .blockBag(blockBag)
+                .actor(actor)
+                .build();
         }
 
     }

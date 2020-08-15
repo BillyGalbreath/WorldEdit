@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extent.inventory;
@@ -29,14 +29,18 @@ public abstract class BlockBag {
 
     /**
      * Stores a block as if it was mined.
-     * 
+     *
      * @param blockState the block state
      * @throws BlockBagException on error
      */
     public void storeDroppedBlock(BlockState blockState) throws BlockBagException {
         BlockState dropped = blockState; // TODO BlockType.getBlockBagItem(id, data);
-        if (dropped == null) return;
-        if (dropped.getBlockType().getMaterial().isAir()) return;
+        if (dropped == null) {
+            return;
+        }
+        if (dropped.getBlockType().getMaterial().isAir()) {
+            return;
+        }
 
         storeBlock(dropped);
     }
@@ -55,8 +59,10 @@ public abstract class BlockBag {
             }
             fetchBlock(blockState);
         } catch (OutOfBlocksException e) {
-            BlockState placed = blockState;// TODO BlockType.getBlockBagItem(id, data);
-            if (placed == null || placed.getBlockType().getMaterial().isAir()) throw e; // TODO: check
+            BlockState placed = blockState; // TODO BlockType.getBlockBagItem(id, data);
+            if (placed.getBlockType().getMaterial().isAir()) {
+                throw e; // TODO: check
+            }
 
             fetchBlock(placed);
         }
@@ -91,7 +97,7 @@ public abstract class BlockBag {
 
     /**
      * Checks to see if a block exists without removing it.
-     * 
+     *
      * @param blockState the block state
      * @return whether the block exists
      */

@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.math.convolution;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
@@ -31,6 +29,8 @@ import com.sk89q.worldedit.world.block.BlockTypes;
 
 import javax.annotation.Nullable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Allows applications of Kernels onto the region's height map.
  *
@@ -38,15 +38,15 @@ import javax.annotation.Nullable;
  */
 public class HeightMap {
 
-    private int[] data;
-    private int width;
-    private int height;
+    private final int[] data;
+    private final int width;
+    private final int height;
 
-    private Region region;
-    private EditSession session;
+    private final Region region;
+    private final EditSession session;
 
     /**
-     * Constructs the HeightMap
+     * Constructs the HeightMap.
      *
      * @param session an edit session
      * @param region the region
@@ -77,13 +77,12 @@ public class HeightMap {
 
     /**
      * Apply the filter 'iterations' amount times.
-     * 
+     *
      * @param filter the filter
      * @param iterations the number of iterations
      * @return number of blocks affected
-     * @throws MaxChangedBlocksException
+     * @throws MaxChangedBlocksException if the maximum block change limit is exceeded
      */
-
     public int applyFilter(HeightMapFilter filter, int iterations) throws MaxChangedBlocksException {
         checkNotNull(filter);
 
@@ -98,13 +97,12 @@ public class HeightMap {
     }
 
     /**
-     * Apply a raw heightmap to the region
-     * 
+     * Apply a raw heightmap to the region.
+     *
      * @param data the data
      * @return number of blocks affected
-     * @throws MaxChangedBlocksException
+     * @throws MaxChangedBlocksException if the maximum block change limit is exceeded
      */
-
     public int apply(int[] data) throws MaxChangedBlocksException {
         checkNotNull(data);
 

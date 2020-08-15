@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions.selector;
@@ -87,7 +87,7 @@ public class ExtendingCuboidRegionSelector extends CuboidRegionSelector {
 
     @Override
     public boolean selectPrimary(BlockVector3 position, SelectorLimits limits) {
-        if (position1 != null && position2 != null && position.equals(position1) && position.equals(position2)) {
+        if (position.equals(position1) && position.equals(position2)) {
             return false;
         }
 
@@ -122,9 +122,9 @@ public class ExtendingCuboidRegionSelector extends CuboidRegionSelector {
         region.setPos1(position1);
         region.setPos2(position2);
 
-        assert(region.contains(o1));
-        assert(region.contains(o2));
-        assert(region.contains(position));
+        assert region.contains(o1);
+        assert region.contains(o2);
+        assert region.contains(position);
 
         return true;
     }
@@ -134,7 +134,7 @@ public class ExtendingCuboidRegionSelector extends CuboidRegionSelector {
         player.printInfo(TranslatableComponent.of(
                 "worldedit.selection.extend.explain.primary",
                 TextComponent.of(pos.toString()),
-                TextComponent.of(region.getArea())
+                TextComponent.of(region.getVolume())
         ));
 
         explainRegionAdjust(player, session);
@@ -145,7 +145,7 @@ public class ExtendingCuboidRegionSelector extends CuboidRegionSelector {
         player.printInfo(TranslatableComponent.of(
                 "worldedit.selection.extend.explain.secondary",
                 TextComponent.of(pos.toString()),
-                TextComponent.of(region.getArea())
+                TextComponent.of(region.getVolume())
         ));
 
         explainRegionAdjust(player, session);

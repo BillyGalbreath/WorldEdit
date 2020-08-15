@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.fabric.internal;
@@ -32,12 +32,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
-import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class FabricWorldNativeAccess implements WorldNativeAccess<WorldChunk, BlockState, BlockPos> {
-    private static final int UPDATE = 1, NOTIFY = 2;
+    private static final int UPDATE = 1;
+    private static final int NOTIFY = 2;
 
     private final WeakReference<World> world;
 
@@ -75,7 +76,7 @@ public class FabricWorldNativeAccess implements WorldNativeAccess<WorldChunk, Bl
 
     @Override
     public BlockState getValidBlockForPosition(BlockState block, BlockPos position) {
-        return Block.getRenderingState(block, getWorld(), position);
+        return Block.postProcessState(block, getWorld(), position);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class FabricWorldNativeAccess implements WorldNativeAccess<WorldChunk, Bl
             return false;
         }
         tileEntity.setLocation(getWorld(), position);
-        tileEntity.fromTag(nativeTag);
+        tileEntity.fromTag(getWorld().getBlockState(position), nativeTag);
         return true;
     }
 
@@ -119,17 +120,16 @@ public class FabricWorldNativeAccess implements WorldNativeAccess<WorldChunk, Bl
     public void notifyNeighbors(BlockPos pos, BlockState oldState, BlockState newState) {
         getWorld().updateNeighbors(pos, oldState.getBlock());
         if (newState.hasComparatorOutput()) {
-            getWorld().updateHorizontalAdjacent(pos, newState.getBlock());
+            getWorld().updateComparators(pos, newState.getBlock());
         }
     }
 
     @Override
-    public void updateNeighbors(BlockPos pos, BlockState oldState, BlockState newState) {
+    public void updateNeighbors(BlockPos pos, BlockState oldState, BlockState newState, int recursionLimit) {
         World world = getWorld();
-        // method_11637 = updateDiagonalNeighbors
-        oldState.method_11637(world, pos, NOTIFY);
-        newState.updateNeighborStates(world, pos, NOTIFY);
-        newState.method_11637(world, pos, NOTIFY);
+        oldState.prepare(world, pos, NOTIFY, recursionLimit);
+        newState.updateNeighbors(world, pos, NOTIFY, recursionLimit);
+        newState.prepare(world, pos, NOTIFY, recursionLimit);
     }
 
     @Override

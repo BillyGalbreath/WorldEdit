@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.chunk;
@@ -35,26 +35,26 @@ import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldedit.world.storage.InvalidFormatException;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
- * The chunk format for Minecraft 1.13 and newer
+ * The chunk format for Minecraft 1.13 to 1.15
  */
 public class AnvilChunk13 implements Chunk {
 
-    private CompoundTag rootTag;
-    private BlockState[][] blocks;
-    private int rootX;
-    private int rootZ;
+    private final CompoundTag rootTag;
+    private final BlockState[][] blocks;
+    private final int rootX;
+    private final int rootZ;
 
-    private Map<BlockVector3, Map<String,Tag>> tileEntities;
+    private Map<BlockVector3, Map<String, Tag>> tileEntities;
 
     /**
      * Construct the chunk with a compound tag.
-     * 
+     *
      * @param tag the tag to read
      * @throws DataException on a data error
      */
@@ -112,44 +112,48 @@ public class AnvilChunk13 implements Chunk {
                 }
                 palette[paletteEntryId] = blockState;
             }
-            int paletteBits = 4;
-            while ((1 << paletteBits) < paletteSize) {
-                ++paletteBits;
-            }
-            int paletteMask = (1 << paletteBits) - 1;
 
             // parse block states
             long[] blockStatesSerialized = NBTUtils.getChildTag(sectionTag.getValue(), "BlockStates", LongArrayTag.class).getValue();
 
-            int blocksPerChunkSection = 16 * 16 * 16;
-            BlockState[] chunkSectionBlocks = new BlockState[blocksPerChunkSection];
+            BlockState[] chunkSectionBlocks = new BlockState[16 * 16 * 16];
             blocks[y] = chunkSectionBlocks;
 
-            long currentSerializedValue = 0;
-            int nextSerializedItem = 0;
-            int remainingBits = 0;
-            for (int blockPos = 0; blockPos < blocksPerChunkSection; blockPos++) {
-                int localBlockId;
-                if (remainingBits < paletteBits) {
-                    int bitsNextLong = paletteBits - remainingBits;
-                    localBlockId = (int) currentSerializedValue;
-                    if (nextSerializedItem >= blockStatesSerialized.length) {
-                        throw new InvalidFormatException("Too short block state table");
-                    }
-                    currentSerializedValue = blockStatesSerialized[nextSerializedItem++];
-                    localBlockId |= (currentSerializedValue & ((1 << bitsNextLong) - 1)) << remainingBits;
-                    currentSerializedValue >>>= bitsNextLong;
-                    remainingBits = 64 - bitsNextLong;
-                } else {
-                    localBlockId = (int) (currentSerializedValue & paletteMask);
-                    currentSerializedValue >>>= paletteBits;
-                    remainingBits -= paletteBits;
+            readBlockStates(palette, blockStatesSerialized, chunkSectionBlocks);
+        }
+    }
+
+    protected void readBlockStates(BlockState[] palette, long[] blockStatesSerialized, BlockState[] chunkSectionBlocks) throws InvalidFormatException {
+        int paletteBits = 4;
+        while ((1 << paletteBits) < palette.length) {
+            ++paletteBits;
+        }
+        int paletteMask = (1 << paletteBits) - 1;
+
+        long currentSerializedValue = 0;
+        int nextSerializedItem = 0;
+        int remainingBits = 0;
+        for (int blockPos = 0; blockPos < chunkSectionBlocks.length; blockPos++) {
+            int localBlockId;
+            if (remainingBits < paletteBits) {
+                int bitsNextLong = paletteBits - remainingBits;
+                localBlockId = (int) currentSerializedValue;
+                if (nextSerializedItem >= blockStatesSerialized.length) {
+                    throw new InvalidFormatException("Too short block state table");
                 }
-                if (localBlockId >= palette.length) {
-                    throw new InvalidFormatException("Invalid block state table entry: " + localBlockId);
-                }
-                chunkSectionBlocks[blockPos] = palette[localBlockId];
+                currentSerializedValue = blockStatesSerialized[nextSerializedItem++];
+                localBlockId |= (currentSerializedValue & ((1 << bitsNextLong) - 1)) << remainingBits;
+                currentSerializedValue >>>= bitsNextLong;
+                remainingBits = 64 - bitsNextLong;
+            } else {
+                localBlockId = (int) (currentSerializedValue & paletteMask);
+                currentSerializedValue >>>= paletteBits;
+                remainingBits -= paletteBits;
             }
+            if (localBlockId >= palette.length) {
+                throw new InvalidFormatException("Invalid block state table entry: " + localBlockId);
+            }
+            chunkSectionBlocks[blockPos] = palette[localBlockId];
         }
     }
 
@@ -159,8 +163,6 @@ public class AnvilChunk13 implements Chunk {
 
     /**
      * Used to load the tile entities.
-     *
-     * @throws DataException
      */
     private void populateTileEntities() throws DataException {
         tileEntities = new HashMap<>();

@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.bukkit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.NotABlockException;
 import com.sk89q.worldedit.WorldEdit;
@@ -32,6 +30,7 @@ import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.internal.block.BlockStateIdAccess;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
+import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.biome.BiomeType;
@@ -51,6 +50,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -61,8 +61,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Adapts between Bukkit and WorldEdit equivalent objects.
@@ -79,7 +80,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Checks equality between a WorldEdit BlockType and a Bukkit Material
+     * Checks equality between a WorldEdit BlockType and a Bukkit Material.
      *
      * @param blockType The WorldEdit BlockType
      * @param type The Bukkit Material
@@ -122,7 +123,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Create a WorldEdit Actor from a Bukkit CommandSender
+     * Create a WorldEdit Actor from a Bukkit CommandSender.
      *
      * @param sender The Bukkit CommandSender
      * @return The WorldEdit Actor
@@ -164,6 +165,28 @@ public class BukkitAdapter {
      */
     public static Player adapt(com.sk89q.worldedit.entity.Player player) {
         return ((BukkitPlayer) player).getPlayer();
+    }
+
+    /**
+     * Create a WorldEdit Direction from a Bukkit BlockFace.
+     *
+     * @param face the Bukkit BlockFace
+     * @return a WorldEdit direction
+     */
+    public static Direction adapt(@Nullable BlockFace face) {
+        if (face == null) {
+            return null;
+        }
+        switch (face) {
+            case NORTH: return Direction.NORTH;
+            case SOUTH: return Direction.SOUTH;
+            case WEST: return Direction.WEST;
+            case EAST: return Direction.EAST;
+            case DOWN: return Direction.DOWN;
+            case UP:
+            default:
+                return Direction.UP;
+        }
     }
 
     /**
@@ -299,7 +322,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Create a Bukkit Material form a WorldEdit ItemType
+     * Create a Bukkit Material form a WorldEdit ItemType.
      *
      * @param itemType The WorldEdit ItemType
      * @return The Bukkit Material
@@ -313,7 +336,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Create a Bukkit Material form a WorldEdit BlockType
+     * Create a Bukkit Material form a WorldEdit BlockType.
      *
      * @param blockType The WorldEdit BlockType
      * @return The Bukkit Material
@@ -365,6 +388,7 @@ public class BukkitAdapter {
      * @return WorldEdit EntityType
      */
     public static EntityType adapt(org.bukkit.entity.EntityType entityType) {
+        @SuppressWarnings("deprecation")
         final String name = entityType.getName();
         if (name == null) {
             return null;
@@ -372,6 +396,7 @@ public class BukkitAdapter {
         return EntityTypes.get(name.toLowerCase(Locale.ROOT));
     }
 
+    @SuppressWarnings("deprecation")
     public static org.bukkit.entity.EntityType adapt(EntityType entityType) {
         if (!entityType.getId().startsWith("minecraft:")) {
             throw new IllegalArgumentException("Bukkit only supports vanilla entities");
@@ -379,11 +404,11 @@ public class BukkitAdapter {
         return org.bukkit.entity.EntityType.fromName(entityType.getId().substring(10));
     }
 
-    private static EnumMap<Material, BlockType> materialBlockTypeCache = new EnumMap<>(Material.class);
-    private static EnumMap<Material, ItemType> materialItemTypeCache = new EnumMap<>(Material.class);
+    private static final EnumMap<Material, BlockType> materialBlockTypeCache = new EnumMap<>(Material.class);
+    private static final EnumMap<Material, ItemType> materialItemTypeCache = new EnumMap<>(Material.class);
 
     /**
-     * Converts a Material to a BlockType
+     * Converts a Material to a BlockType.
      *
      * @param material The material
      * @return The blocktype
@@ -395,7 +420,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Converts a Material to a ItemType
+     * Converts a Material to a ItemType.
      *
      * @param material The material
      * @return The itemtype
@@ -406,11 +431,11 @@ public class BukkitAdapter {
         return materialItemTypeCache.computeIfAbsent(material, input -> ItemTypes.get(material.getKey().toString()));
     }
 
-    private static Int2ObjectMap<BlockState> blockStateCache = new Int2ObjectOpenHashMap<>();
-    private static Map<String, BlockState> blockStateStringCache = new HashMap<>();
+    private static final Int2ObjectMap<BlockState> blockStateCache = new Int2ObjectOpenHashMap<>();
+    private static final Map<String, BlockState> blockStateStringCache = new HashMap<>();
 
     /**
-     * Create a WorldEdit BlockState from a Bukkit BlockData
+     * Create a WorldEdit BlockState from a Bukkit BlockData.
      *
      * @param blockData The Bukkit BlockData
      * @return The WorldEdit BlockState
@@ -429,23 +454,24 @@ public class BukkitAdapter {
             });
         } else {
             return blockStateCache.computeIfAbsent(
-                    WorldEditPlugin.getInstance().getBukkitImplAdapter().getInternalBlockStateId(blockData).orElseGet(
-                            () -> blockData.getAsString().hashCode()
-                    ), input -> {
-                        try {
-                            return WorldEdit.getInstance().getBlockFactory().parseFromInput(blockData.getAsString(), TO_BLOCK_CONTEXT).toImmutableState();
-                        } catch (InputParseException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
-                    });
+                WorldEditPlugin.getInstance().getBukkitImplAdapter().getInternalBlockStateId(blockData).orElseGet(
+                    () -> blockData.getAsString().hashCode()
+                ),
+                input -> {
+                    try {
+                        return WorldEdit.getInstance().getBlockFactory().parseFromInput(blockData.getAsString(), TO_BLOCK_CONTEXT).toImmutableState();
+                    } catch (InputParseException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                });
         }
     }
 
-    private static Int2ObjectMap<BlockData> blockDataCache = new Int2ObjectOpenHashMap<>();
+    private static final Int2ObjectMap<BlockData> blockDataCache = new Int2ObjectOpenHashMap<>();
 
     /**
-     * Create a Bukkit BlockData from a WorldEdit BlockStateHolder
+     * Create a Bukkit BlockData from a WorldEdit BlockStateHolder.
      *
      * @param block The WorldEdit BlockStateHolder
      * @return The Bukkit BlockData
@@ -461,7 +487,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Create a WorldEdit BlockState from a Bukkit ItemStack
+     * Create a WorldEdit BlockState from a Bukkit ItemStack.
      *
      * @param itemStack The Bukkit ItemStack
      * @return The WorldEdit BlockState
@@ -476,7 +502,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Create a WorldEdit BaseItemStack from a Bukkit ItemStack
+     * Create a WorldEdit BaseItemStack from a Bukkit ItemStack.
      *
      * @param itemStack The Bukkit ItemStack
      * @return The WorldEdit BaseItemStack
@@ -490,7 +516,7 @@ public class BukkitAdapter {
     }
 
     /**
-     * Create a Bukkit ItemStack from a WorldEdit BaseItemStack
+     * Create a Bukkit ItemStack from a WorldEdit BaseItemStack.
      *
      * @param item The WorldEdit BaseItemStack
      * @return The Bukkit ItemStack

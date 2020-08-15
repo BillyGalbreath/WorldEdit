@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.function.generator;
@@ -38,7 +38,7 @@ public class GardenPatchGenerator implements RegionFunction {
     private final Random random = new Random();
     private final EditSession editSession;
     private Pattern plant = getPumpkinPattern();
-    private Pattern leafPattern = BlockTypes.OAK_LEAVES.getDefaultState().with(BlockTypes.OAK_LEAVES.getProperty("persistent"), true);
+    private final Pattern leafPattern = BlockTypes.OAK_LEAVES.getDefaultState().with(BlockTypes.OAK_LEAVES.getProperty("persistent"), true);
     private int affected;
 
     /**
@@ -84,8 +84,12 @@ public class GardenPatchGenerator implements RegionFunction {
      * @param pos the vine position
      */
     private void placeVine(BlockVector3 basePos, BlockVector3 pos) throws MaxChangedBlocksException {
-        if (pos.distance(basePos) > 4) return;
-        if (!editSession.getBlock(pos).getBlockType().getMaterial().isAir()) return;
+        if (pos.distance(basePos) > 4) {
+            return;
+        }
+        if (!editSession.getBlock(pos).getBlockType().getMaterial().isAir()) {
+            return;
+        }
 
         for (int i = -1; i > -3; --i) {
             BlockVector3 testPos = pos.add(0, i, 0);
@@ -114,7 +118,7 @@ public class GardenPatchGenerator implements RegionFunction {
                     setBlockIfAir(editSession, pos.add(1, h, -1), log);
                     affected++;
                 }
-                setBlockIfAir(editSession, p = pos.add(0, 0, -1), plant.apply(p));
+                setBlockIfAir(editSession, p = pos.add(0, 0, -1), plant.applyBlock(p));
                 affected++;
                 break;
 
@@ -126,7 +130,7 @@ public class GardenPatchGenerator implements RegionFunction {
                     setBlockIfAir(editSession, pos.add(1, h, 0), log);
                     affected++;
                 }
-                setBlockIfAir(editSession, p = pos.add(1, 0, 1), plant.apply(p));
+                setBlockIfAir(editSession, p = pos.add(1, 0, 1), plant.applyBlock(p));
                 affected++;
                 break;
 
@@ -138,7 +142,7 @@ public class GardenPatchGenerator implements RegionFunction {
                     setBlockIfAir(editSession, pos.add(-1, h, 0), log);
                     affected++;
                 }
-                setBlockIfAir(editSession, p = pos.add(-1, 0, 1), plant.apply(p));
+                setBlockIfAir(editSession, p = pos.add(-1, 0, 1), plant.applyBlock(p));
                 affected++;
                 break;
 
@@ -150,8 +154,10 @@ public class GardenPatchGenerator implements RegionFunction {
                     setBlockIfAir(editSession, pos.add(-1, h, -1), log);
                     affected++;
                 }
-                setBlockIfAir(editSession, p = pos.add(-1, 0, -1), plant.apply(p));
+                setBlockIfAir(editSession, p = pos.add(-1, 0, -1), plant.applyBlock(p));
                 affected++;
+                break;
+            default:
                 break;
         }
     }

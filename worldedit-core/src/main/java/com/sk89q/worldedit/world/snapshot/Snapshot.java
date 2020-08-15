@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 // $Id$
@@ -64,8 +64,8 @@ public class Snapshot implements Comparable<Snapshot> {
      * Get a chunk store.
      *
      * @return a chunk store
-     * @throws IOException
-     * @throws DataException
+     * @throws IOException if there is an error loading the chunk store
+     * @throws DataException  if there is an error loading the chunk store
      */
     public ChunkStore getChunkStore() throws IOException, DataException {
         ChunkStore chunkStore = internalGetChunkStore();
@@ -80,8 +80,8 @@ public class Snapshot implements Comparable<Snapshot> {
      * Get a chunk store.
      *
      * @return a chunk store
-     * @throws IOException
-     * @throws DataException
+     * @throws IOException if there is an error loading the chunk store
+     * @throws DataException if there is an error loading the chunk store
      */
     private ChunkStore internalGetChunkStore() throws IOException, DataException {
         String lowerCaseFileName = file.getName().toLowerCase(Locale.ROOT);
@@ -205,8 +205,10 @@ public class Snapshot implements Comparable<Snapshot> {
     public int compareTo(Snapshot o) {
         if (o.date == null || date == null) {
             // Remove the folder from the name
-            int i = name.indexOf('/'), j = o.name.indexOf('/');
-            return name.substring((i > 0 ? 0 : i)).compareTo(o.name.substring((j > 0 ? 0 : j)));
+            int ourIndex = name.indexOf('/');
+            int theirIndex = o.name.indexOf('/');
+            return name.substring(Math.min(ourIndex, 0))
+                .compareTo(o.name.substring(Math.min(theirIndex, 0)));
         } else {
             return date.compareTo(o.date);
         }

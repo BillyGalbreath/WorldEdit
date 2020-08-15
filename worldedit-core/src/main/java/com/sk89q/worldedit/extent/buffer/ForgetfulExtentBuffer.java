@@ -3,29 +3,26 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extent.buffer;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.function.mask.Mask;
-import com.sk89q.worldedit.function.mask.Mask2D;
 import com.sk89q.worldedit.function.mask.Masks;
 import com.sk89q.worldedit.function.pattern.BiomePattern;
 import com.sk89q.worldedit.function.pattern.Pattern;
@@ -43,6 +40,9 @@ import com.sk89q.worldedit.world.block.BlockTypes;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Buffers changes to an {@link Extent} and allows later retrieval for
@@ -54,13 +54,10 @@ import java.util.Map;
 public class ForgetfulExtentBuffer extends AbstractDelegateExtent implements Pattern, BiomePattern {
 
     private final Map<BlockVector3, BaseBlock> buffer = new LinkedHashMap<>();
-    private final Map<BlockVector2, BiomeType> biomeBuffer = new LinkedHashMap<>();
+    private final Map<BlockVector3, BiomeType> biomeBuffer = new LinkedHashMap<>();
     private final Mask mask;
-    private final Mask2D biomeMask;
     private BlockVector3 min = null;
-    private BlockVector2 min2d = null;
     private BlockVector3 max = null;
-    private BlockVector2 max2d = null;
 
     /**
      * Create a new extent buffer that will buffer every change.
@@ -82,25 +79,27 @@ public class ForgetfulExtentBuffer extends AbstractDelegateExtent implements Pat
         super(delegate);
         checkNotNull(mask);
         this.mask = mask;
-        Mask2D bmask = mask.toMask2D();
-        this.biomeMask = bmask == null ? Masks.alwaysTrue2D() : bmask;
     }
 
-    @Override
-    public <B extends BlockStateHolder<B>> boolean setBlock(BlockVector3 location, B block) throws WorldEditException {
+    private void updateBounds(BlockVector3 position) {
         // Update minimum
         if (min == null) {
-            min = location;
+            min = position;
         } else {
-            min = min.getMinimum(location);
+            min = min.getMinimum(position);
         }
 
         // Update maximum
         if (max == null) {
-            max = location;
+            max = position;
         } else {
-            max = max.getMaximum(location);
+            max = max.getMaximum(position);
         }
+    }
+
+    @Override
+    public <B extends BlockStateHolder<B>> boolean setBlock(BlockVector3 location, B block) throws WorldEditException {
+        updateBounds(location);
 
         if (mask.test(location)) {
             buffer.put(location, block.toBaseBlock());
@@ -111,22 +110,10 @@ public class ForgetfulExtentBuffer extends AbstractDelegateExtent implements Pat
     }
 
     @Override
-    public boolean setBiome(BlockVector2 position, BiomeType biome) {
-        // Update minimum
-        if (min2d == null) {
-            min2d = position;
-        } else {
-            min2d = min2d.getMinimum(position);
-        }
+    public boolean setBiome(BlockVector3 position, BiomeType biome) {
+        updateBounds(position);
 
-        // Update maximum
-        if (max2d == null) {
-            max2d = position;
-        } else {
-            max2d = max2d.getMaximum(position);
-        }
-
-        if (biomeMask.test(position)) {
+        if (mask.test(position)) {
             biomeBuffer.put(position, biome);
             return true;
         } else {
@@ -135,7 +122,7 @@ public class ForgetfulExtentBuffer extends AbstractDelegateExtent implements Pat
     }
 
     @Override
-    public BaseBlock apply(BlockVector3 pos) {
+    public BaseBlock applyBlock(BlockVector3 pos) {
         BaseBlock block = buffer.get(pos);
         if (block != null) {
             return block;
@@ -145,7 +132,7 @@ public class ForgetfulExtentBuffer extends AbstractDelegateExtent implements Pat
     }
 
     @Override
-    public BiomeType apply(BlockVector2 pos) {
+    public BiomeType applyBiome(BlockVector3 pos) {
         BiomeType biome = biomeBuffer.get(pos);
         if (biome != null) {
             return biome;
@@ -193,7 +180,10 @@ public class ForgetfulExtentBuffer extends AbstractDelegateExtent implements Pat
 
             @Override
             public Iterable<BlockVector2> asFlatRegion() {
-                return biomeBuffer.keySet();
+                return biomeBuffer.keySet()
+                        .stream()
+                        .map(BlockVector3::toBlockVector2)
+                        .collect(Collectors.toSet());
             }
         };
     }

@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.session;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -47,16 +45,21 @@ import com.sk89q.worldedit.world.item.ItemTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Session manager for WorldEdit.
@@ -72,7 +75,7 @@ public class SessionManager {
     private static final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(
             EvenMoreExecutors.newBoundedCachedThreadPool(0, 1, 5, "WorldEdit Session Saver - %s"));
     private static final Logger log = LoggerFactory.getLogger(SessionManager.class);
-    private static boolean warnedInvalidTool;
+    private static final Set<String> warnedInvalidTool = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private final Timer timer = new Timer("WorldEdit Session Manager");
     private final WorldEdit worldEdit;
@@ -168,18 +171,20 @@ public class SessionManager {
             session.setBlockChangeLimit(config.defaultChangeLimit);
             session.setTimeout(config.calculationTimeout);
             try {
-                if (owner.hasPermission("worldedit.selection.pos")) {
-                    setDefaultWand(session.getWandItem(), config.wandItem, session, new SelectionWand());
-                }
-                if (owner.hasPermission("worldedit.navigation.jumpto.tool") || owner.hasPermission("worldedit.navigation.thru.tool")) {
-                    setDefaultWand(session.getNavWandItem(), config.navigationWand, session, new NavigationWand());
-                }
+                setDefaultWand(session.getWandItem(), config.wandItem, session, new SelectionWand());
             } catch (InvalidToolBindException e) {
-                if (!warnedInvalidTool) {
-                    warnedInvalidTool = true;
-                    log.warn("Invalid wand tool set in config. Tool will not be assigned: " + e.getItemType());
+                if (warnedInvalidTool.add("selwand")) {
+                    log.warn("Invalid selection wand tool set in config. Tool will not be assigned: " + e.getItemType());
                 }
             }
+            try {
+                setDefaultWand(session.getNavWandItem(), config.navigationWand, session, new NavigationWand());
+            } catch (InvalidToolBindException e) {
+                if (warnedInvalidTool.add("navwand")) {
+                    log.warn("Invalid navigation wand tool set in config. Tool will not be assigned: " + e.getItemType());
+                }
+            }
+            session.compareAndResetDirty();
 
             // Remember the session regardless of if it's currently active or not.
             // And have the SessionTracker FLUSH inactive sessions.

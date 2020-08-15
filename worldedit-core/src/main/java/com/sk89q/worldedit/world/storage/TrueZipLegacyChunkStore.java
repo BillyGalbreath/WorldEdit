@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.world.storage;
@@ -36,8 +36,8 @@ import java.util.zip.ZipException;
  */
 public class TrueZipLegacyChunkStore extends LegacyChunkStore {
 
-    private File zipFile;
-    private ZipFile zip;
+    private final File zipFile;
+    private final ZipFile zip;
     private String folder;
 
     /**
@@ -47,8 +47,8 @@ public class TrueZipLegacyChunkStore extends LegacyChunkStore {
      *
      * @param zipFile the ZIP file to open
      * @param folder the folder to look into in the ZIP
-     * @throws IOException
-     * @throws ZipException
+     * @throws IOException if there is an error opening the zip
+     * @throws ZipException if there is an error opening the zip
      */
     public TrueZipLegacyChunkStore(File zipFile, String folder) throws IOException, ZipException {
         this.zipFile = zipFile;
@@ -62,8 +62,8 @@ public class TrueZipLegacyChunkStore extends LegacyChunkStore {
      * be detected.
      *
      * @param zipFile the ZIP file to open
-     * @throws IOException
-     * @throws ZipException
+     * @throws IOException if there is an error opening the zip
+     * @throws ZipException if there is an error opening the zip
      */
     public TrueZipLegacyChunkStore(File zipFile) throws IOException, ZipException {
         this.zipFile = zipFile;
@@ -78,8 +78,8 @@ public class TrueZipLegacyChunkStore extends LegacyChunkStore {
      * @param f2 the second part of the filename
      * @param name the name of the file
      * @return an input stream
-     * @throws IOException
-     * @throws DataException
+     * @throws IOException if there is an error getting the chunk data
+     * @throws DataException if there is an error getting the chunk data
      */
     @Override
     @SuppressWarnings("unchecked")

@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.cli;
@@ -96,27 +96,27 @@ public class CLIWorldEdit {
         for (Map.Entry<String, FileRegistries.BlockManifest> manifestEntry : fileRegistries.getDataFile().blocks.entrySet()) {
             if (BlockType.REGISTRY.get(manifestEntry.getKey()) == null) {
                 BlockType.REGISTRY.register(manifestEntry.getKey(), new BlockType(manifestEntry.getKey(), input -> {
-                            ParserContext context = new ParserContext();
-                            context.setPreferringWildcard(true);
-                            context.setTryLegacy(false);
-                            context.setRestricted(false);
-                            try {
-                                FuzzyBlockState state = (FuzzyBlockState) WorldEdit.getInstance().getBlockFactory().parseFromInput(
-                                        manifestEntry.getValue().defaultstate,
-                                        context
-                                ).toImmutableState();
-                                BlockState defaultState = input.getBlockType().getAllStates().get(0);
-                                for (Map.Entry<Property<?>, Object> propertyObjectEntry : state.getStates().entrySet()) {
-                                    @SuppressWarnings("unchecked")
-                                    Property<Object> prop = (Property<Object>) propertyObjectEntry.getKey();
-                                    defaultState = defaultState.with(prop, propertyObjectEntry.getValue());
-                                }
-                                return defaultState;
-                            } catch (InputParseException e) {
-                                LOGGER.warn("Error loading block state for " + manifestEntry.getKey(), e);
-                                return input;
-                            }
-                        }));
+                    ParserContext context = new ParserContext();
+                    context.setPreferringWildcard(true);
+                    context.setTryLegacy(false);
+                    context.setRestricted(false);
+                    try {
+                        FuzzyBlockState state = (FuzzyBlockState) WorldEdit.getInstance().getBlockFactory().parseFromInput(
+                            manifestEntry.getValue().defaultstate,
+                            context
+                        ).toImmutableState();
+                        BlockState defaultState = input.getBlockType().getAllStates().get(0);
+                        for (Map.Entry<Property<?>, Object> propertyObjectEntry : state.getStates().entrySet()) {
+                            @SuppressWarnings("unchecked")
+                            Property<Object> prop = (Property<Object>) propertyObjectEntry.getKey();
+                            defaultState = defaultState.with(prop, propertyObjectEntry.getValue());
+                        }
+                        return defaultState;
+                    } catch (InputParseException e) {
+                        LOGGER.warn("Error loading block state for " + manifestEntry.getKey(), e);
+                        return input;
+                    }
+                }));
             }
         }
         // Items

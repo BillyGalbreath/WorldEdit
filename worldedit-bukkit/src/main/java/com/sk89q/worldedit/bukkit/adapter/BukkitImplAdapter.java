@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.bukkit.adapter;
@@ -24,6 +24,7 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.blocks.BaseItem;
 import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.entity.BaseEntity;
+import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.internal.wna.WorldNativeAccess;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
@@ -32,6 +33,7 @@ import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.util.SideEffect;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.world.DataFixer;
+import com.sk89q.worldedit.world.RegenOptions;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockType;
@@ -43,10 +45,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * An interface for adapters of various Bukkit implementations.
@@ -61,7 +63,7 @@ public interface BukkitImplAdapter {
     int getDataVersion();
 
     /**
-     * Get a data fixer, or null if not supported
+     * Get a data fixer, or null if not supported.
      *
      * @return the data fixer
      */
@@ -69,6 +71,8 @@ public interface BukkitImplAdapter {
     DataFixer getDataFixer();
 
     /**
+     * Check if this adapter supports the watchdog.
+     *
      * @return {@code true} if {@link #tickWatchdog()} is implemented
      */
     default boolean supportsWatchdog() {
@@ -219,10 +223,11 @@ public interface BukkitImplAdapter {
      * Regenerate a region in the given world, so it appears "as new".
      * @param world the world to regen in
      * @param region the region to regen
-     * @param session the session to use for setting blocks
+     * @param extent the extent to use for setting blocks
+     * @param options the regeneration options
      * @return true on success, false on failure
      */
-    default boolean regenerate(World world, Region region, EditSession session) {
+    default boolean regenerate(World world, Region region, Extent extent, RegenOptions options) {
         throw new UnsupportedOperationException("This adapter does not support regeneration.");
     }
 }

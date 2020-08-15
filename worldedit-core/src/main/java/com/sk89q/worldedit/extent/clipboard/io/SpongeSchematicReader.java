@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extent.clipboard.io;
@@ -39,7 +39,7 @@ import com.sk89q.worldedit.extension.platform.Capability;
 import com.sk89q.worldedit.extension.platform.Platform;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.math.BlockVector2;
+import com.sk89q.worldedit.internal.Constants;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
@@ -96,11 +96,17 @@ public class SpongeSchematicReader extends NBTSchematicReader {
         int liveDataVersion = platform.getDataVersion();
 
         if (schematicVersion == 1) {
-            dataVersion = 1631; // this is a relatively safe assumption unless someone imports a schematic from 1.12, e.g. sponge 7.1-
+            dataVersion = Constants.DATA_VERSION_MC_1_13_2; // this is a relatively safe assumption unless someone imports a schematic from 1.12, e.g. sponge 7.1-
             fixer = platform.getDataFixer();
             return readVersion1(schematicTag);
         } else if (schematicVersion == 2) {
             dataVersion = requireTag(schematic, "DataVersion", IntTag.class).getValue();
+            if (dataVersion < 0) {
+                log.warn("Schematic has an unknown data version ({}). Data may be incompatible.",
+                    dataVersion);
+                // Do not DFU unknown data
+                dataVersion = liveDataVersion;
+            }
             if (dataVersion > liveDataVersion) {
                 log.warn("Schematic was made in a newer Minecraft version ({} > {}). Data may be incompatible.",
                         dataVersion, liveDataVersion);
@@ -127,9 +133,13 @@ public class SpongeSchematicReader extends NBTSchematicReader {
             CompoundTag schematicTag = getBaseTag();
             Map<String, Tag> schematic = schematicTag.getValue();
             if (schematicVersion == 1) {
-                return OptionalInt.of(1631);
+                return OptionalInt.of(Constants.DATA_VERSION_MC_1_13_2);
             } else if (schematicVersion == 2) {
-                return OptionalInt.of(requireTag(schematic, "DataVersion", IntTag.class).getValue());
+                int dataVersion = requireTag(schematic, "DataVersion", IntTag.class).getValue();
+                if (dataVersion < 0) {
+                    return OptionalInt.empty();
+                }
+                return OptionalInt.of(dataVersion);
             }
             return OptionalInt.empty();
         } catch (IOException e) {
@@ -139,9 +149,6 @@ public class SpongeSchematicReader extends NBTSchematicReader {
 
     private CompoundTag getBaseTag() throws IOException {
         NamedTag rootTag = inputStream.readNamedTag();
-        if (!rootTag.getName().equals("Schematic")) {
-            throw new IOException("Tag 'Schematic' does not exist or is not first");
-        }
         CompoundTag schematicTag = (CompoundTag) rootTag.getTag();
 
         // Check
@@ -320,8 +327,8 @@ public class SpongeSchematicReader extends NBTSchematicReader {
             }
             BiomeType biome = BiomeTypes.get(key);
             if (biome == null) {
-                log.warn("Unknown biome type :" + key +
-                        " in palette. Are you missing a mod or using a schematic made in a newer version of Minecraft?");
+                log.warn("Unknown biome type :" + key
+                    + " in palette. Are you missing a mod or using a schematic made in a newer version of Minecraft?");
             }
             Tag idTag = palettePart.getValue();
             if (!(idTag instanceof IntTag)) {
@@ -337,7 +344,7 @@ public class SpongeSchematicReader extends NBTSchematicReader {
         int biomeJ = 0;
         int bVal;
         int varIntLength;
-        BlockVector2 min = clipboard.getMinimumPoint().toBlockVector2();
+        BlockVector3 min = clipboard.getMinimumPoint();
         while (biomeJ < biomes.length) {
             bVal = 0;
             varIntLength = 0;
@@ -356,7 +363,9 @@ public class SpongeSchematicReader extends NBTSchematicReader {
             int z = biomeIndex / width;
             int x = biomeIndex % width;
             BiomeType type = palette.get(bVal);
-            clipboard.setBiome(min.add(x, z), type);
+            for (int y = 0; y < clipboard.getRegion().getHeight(); y++) {
+                clipboard.setBiome(min.add(x, y, z), type);
+            }
             biomeIndex++;
         }
     }

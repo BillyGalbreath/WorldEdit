@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extension.factory.parser.pattern;
@@ -30,6 +30,8 @@ import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.function.pattern.StateApplyingPattern;
 import com.sk89q.worldedit.function.pattern.TypeApplyingPattern;
 import com.sk89q.worldedit.internal.registry.InputParser;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,19 +84,29 @@ public class TypeOrStateApplyingPatternParser extends InputParser<Pattern> {
                     worldEdit.getBlockFactory().parseFromInput(type, context).getBlockType().getDefaultState());
         } else {
             // states given
-            if (!parts[1].endsWith("]")) throw new InputParseException("State is missing trailing ']'");
+            if (!parts[1].endsWith("]")) {
+                throw new InputParseException(TranslatableComponent.of("worldedit.error.parser.missing-rbracket"));
+            }
             final String[] states = parts[1].substring(0, parts[1].length() - 1).split(",");
             Map<String, String> statesToSet = new HashMap<>();
             for (String state : states) {
-                if (state.isEmpty()) throw new InputParseException("Empty part in state");
+                if (state.isEmpty()) {
+                    throw new InputParseException(TranslatableComponent.of("worldedit.error.parser.empty-state"));
+                }
                 String[] propVal = state.split("=", 2);
-                if (propVal.length != 2) throw new InputParseException("Missing '=' separator");
+                if (propVal.length != 2) {
+                    throw new InputParseException(TranslatableComponent.of("worldedit.error.parser.missing-equals-separator"));
+                }
                 final String prop = propVal[0];
-                if (prop.isEmpty()) throw new InputParseException("Empty property in state");
+                if (prop.isEmpty()) {
+                    throw new InputParseException(TranslatableComponent.of("worldedit.error.parser.empty-property"));
+                }
                 final String value = propVal[1];
-                if (value.isEmpty()) throw new InputParseException("Empty value in state");
+                if (value.isEmpty()) {
+                    throw new InputParseException(TranslatableComponent.of("worldedit.error.parser.empty-value"));
+                }
                 if (statesToSet.put(prop, value) != null) {
-                    throw new InputParseException("Duplicate properties in state");
+                    throw new InputParseException(TranslatableComponent.of("worldedit.error.parser.duplicate-property", TextComponent.of(prop)));
                 }
             }
             if (type.isEmpty()) {

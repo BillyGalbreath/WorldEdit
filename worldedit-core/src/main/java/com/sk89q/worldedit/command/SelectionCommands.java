@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.command;
@@ -341,7 +341,7 @@ public class SelectionCommands {
                              List<BlockVector3> direction) throws WorldEditException {
         try {
             Region region = session.getSelection(world);
-            int oldSize = region.getArea();
+            long oldSize = region.getVolume();
             if (reverseAmount == 0) {
                 for (BlockVector3 dir : direction) {
                     region.contract(dir.multiply(amount));
@@ -352,7 +352,7 @@ public class SelectionCommands {
                 }
             }
             session.getRegionSelector(world).learnChanges();
-            int newSize = region.getArea();
+            long newSize = region.getVolume();
 
             session.getRegionSelector(world).explainRegionAdjust(actor, session);
 
@@ -480,7 +480,7 @@ public class SelectionCommands {
 
         actor.printInfo(TranslatableComponent.of("worldedit.size.size", TextComponent.of(size.toString())));
         actor.printInfo(TranslatableComponent.of("worldedit.size.distance", TextComponent.of(region.getMaximumPoint().distance(region.getMinimumPoint()))));
-        actor.printInfo(TranslatableComponent.of("worldedit.size.blocks", TextComponent.of(region.getArea())));
+        actor.printInfo(TranslatableComponent.of("worldedit.size.blocks", TextComponent.of(region.getVolume())));
     }
 
     @Command(
@@ -538,12 +538,13 @@ public class SelectionCommands {
         }
 
         final int finalPage = page;
-        WorldEditAsyncCommandBuilder.createAndSendMessage(actor,
-                () -> {
-                    BlockDistributionResult res = new BlockDistributionResult(distribution, separateStates);
-                    if (!actor.isPlayer()) res.formatForConsole();
-                    return res.create(finalPage);
-                }, (Component) null);
+        WorldEditAsyncCommandBuilder.createAndSendMessage(actor, () -> {
+            BlockDistributionResult res = new BlockDistributionResult(distribution, separateStates);
+            if (!actor.isPlayer()) {
+                res.formatForConsole();
+            }
+            return res.create(finalPage);
+        }, (Component) null);
     }
 
     @Command(

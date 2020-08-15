@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.math;
@@ -61,6 +61,8 @@ public final class BlockVector3 {
                     return ONE;
                 }
                 break;
+            default:
+                break;
         }
         return new BlockVector3(x, y, z);
     }
@@ -73,9 +75,9 @@ public final class BlockVector3 {
     }
 
     public static boolean isLongPackable(BlockVector3 location) {
-        return isHorizontallyInBounds(location.getX()) &&
-            isHorizontallyInBounds(location.getZ()) &&
-            0 <= location.getY() && location.getY() <= WORLD_Y_MAX;
+        return isHorizontallyInBounds(location.getX())
+            && isHorizontallyInBounds(location.getZ())
+            && 0 <= location.getY() && location.getY() <= WORLD_Y_MAX;
     }
 
     public static void checkLongPackable(BlockVector3 location) {
@@ -103,12 +105,15 @@ public final class BlockVector3 {
      *
      * <p>
      * Useful for sorting by chunk block storage order.
+     * </p>
      */
     public static Comparator<BlockVector3> sortByCoordsYzx() {
         return YzxOrderComparator.YZX_ORDER;
     }
 
-    private final int x, y, z;
+    private final int x;
+    private final int y;
+    private final int z;
 
     /**
      * Construct an instance.
@@ -125,7 +130,7 @@ public final class BlockVector3 {
 
     public long toLongPackedForm() {
         checkLongPackable(this);
-        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
+        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & BITS_12) << (26 + 26)));
     }
 
     /**
@@ -242,7 +247,9 @@ public final class BlockVector3 {
      * @return a new vector
      */
     public BlockVector3 add(BlockVector3... others) {
-        int newX = x, newY = y, newZ = z;
+        int newX = x;
+        int newY = y;
+        int newZ = z;
 
         for (BlockVector3 other : others) {
             newX += other.x;
@@ -285,7 +292,9 @@ public final class BlockVector3 {
      * @return a new vector
      */
     public BlockVector3 subtract(BlockVector3... others) {
-        int newX = x, newY = y, newZ = z;
+        int newX = x;
+        int newY = y;
+        int newZ = z;
 
         for (BlockVector3 other : others) {
             newX -= other.x;
@@ -325,7 +334,9 @@ public final class BlockVector3 {
      * @return a new vector
      */
     public BlockVector3 multiply(BlockVector3... others) {
-        int newX = x, newY = y, newZ = z;
+        int newX = x;
+        int newY = y;
+        int newZ = z;
 
         for (BlockVector3 other : others) {
             newX *= other.x;

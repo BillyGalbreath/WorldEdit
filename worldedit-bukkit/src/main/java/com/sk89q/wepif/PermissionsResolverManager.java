@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.wepif;
@@ -40,24 +40,24 @@ import java.util.List;
 
 public class PermissionsResolverManager implements PermissionsResolver {
 
-    private static final String CONFIG_HEADER = "#\r\n" +
-            "# WEPIF Configuration File\r\n" +
-            "#\r\n" +
-            "# This file handles permissions configuration for every plugin using WEPIF\r\n" +
-            "#\r\n" +
-            "# About editing this file:\r\n" +
-            "# - DO NOT USE TABS. You MUST use spaces or Bukkit will complain. If\r\n" +
-            "#   you use an editor like Notepad++ (recommended for Windows users), you\r\n" +
-            "#   must configure it to \"replace tabs with spaces.\" In Notepad++, this can\r\n" +
-            "#   be changed in Settings > Preferences > Language Menu.\r\n" +
-            "# - Don't get rid of the indents. They are indented so some entries are\r\n" +
-            "#   in categories (like \"enforce-single-session\" is in the \"protection\"\r\n" +
-            "#   category.\r\n" +
-            "# - If you want to check the format of this file before putting it\r\n" +
-            "#   into WEPIF, paste it into http://yaml-online-parser.appspot.com/\r\n" +
-            "#   and see if it gives \"ERROR:\".\r\n" +
-            "# - Lines starting with # are comments and so they are ignored.\r\n" +
-            "\r\n";
+    private static final String CONFIG_HEADER = "#\r\n"
+        + "# WEPIF Configuration File\r\n"
+        + "#\r\n"
+        + "# This file handles permissions configuration for every plugin using WEPIF\r\n"
+        + "#\r\n"
+        + "# About editing this file:\r\n"
+        + "# - DO NOT USE TABS. You MUST use spaces or Bukkit will complain. If\r\n"
+        + "#   you use an editor like Notepad++ (recommended for Windows users), you\r\n"
+        + "#   must configure it to \"replace tabs with spaces.\" In Notepad++, this can\r\n"
+        + "#   be changed in Settings > Preferences > Language Menu.\r\n"
+        + "# - Don't get rid of the indents. They are indented so some entries are\r\n"
+        + "#   in categories (like \"enforce-single-session\" is in the \"protection\"\r\n"
+        + "#   category.\r\n"
+        + "# - If you want to check the format of this file before putting it\r\n"
+        + "#   into WEPIF, paste it into https://yaml-online-parser.appspot.com/\r\n"
+        + "#   and see if it gives \"ERROR:\".\r\n"
+        + "# - Lines starting with # are comments and so they are ignored.\r\n"
+        + "\r\n";
 
     private static PermissionsResolverManager instance;
 
@@ -78,22 +78,22 @@ public class PermissionsResolverManager implements PermissionsResolver {
         return instance;
     }
 
-    private Server server;
+    private final Server server;
     private PermissionsResolver permissionResolver;
     private YAMLProcessor config;
-    private Logger logger = LoggerFactory.getLogger(getClass());
-    private List<Class<? extends PermissionsResolver>> enabledResolvers = new ArrayList<>();
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final List<Class<? extends PermissionsResolver>> enabledResolvers = new ArrayList<>();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Class<? extends PermissionsResolver>[] availableResolvers = new Class[] {
-            PluginPermissionsResolver.class,
-            PermissionsExResolver.class,
-            bPermissionsResolver.class,
-            GroupManagerResolver.class,
-            NijiPermissionsResolver.class,
-            VaultResolver.class,
-            DinnerPermsResolver.class,
-            FlatFilePermissionsResolver.class
+        PluginPermissionsResolver.class,
+        PermissionsExResolver.class,
+        bPermissionsResolver.class,
+        GroupManagerResolver.class,
+        NijiPermissionsResolver.class,
+        VaultResolver.class,
+        DinnerPermsResolver.class,
+        FlatFilePermissionsResolver.class
     };
 
     protected PermissionsResolverManager(Plugin plugin) {
@@ -225,7 +225,8 @@ public class PermissionsResolverManager implements PermissionsResolver {
                 Class<?> next = null;
                 try {
                     next = Class.forName(getClass().getPackage().getName() + "." + nextName);
-                } catch (ClassNotFoundException e) {}
+                } catch (ClassNotFoundException ignored) {
+                }
 
                 if (next == null || !PermissionsResolver.class.isAssignableFrom(next)) {
                     logger.warn("WEPIF: Invalid or unknown class found in enabled resolvers: "
@@ -239,12 +240,12 @@ public class PermissionsResolverManager implements PermissionsResolver {
             }
 
             for (Class<?> clazz : availableResolvers) {
-                if (!stagedEnabled.contains(clazz.getSimpleName()) &&
-                        !disabledResolvers.contains(clazz.getSimpleName())) {
+                if (!stagedEnabled.contains(clazz.getSimpleName())
+                    && !disabledResolvers.contains(clazz.getSimpleName())) {
                     disabledResolvers.add(clazz.getSimpleName());
                     logger.info("New permissions resolver: "
-                            + clazz.getSimpleName() + " detected. " +
-                            "Added to disabled resolvers list.");
+                        + clazz.getSimpleName() + " detected. "
+                        + "Added to disabled resolvers list.");
                     isUpdated = true;
                 }
             }

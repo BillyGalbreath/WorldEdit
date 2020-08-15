@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.bukkit;
@@ -52,13 +52,12 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Locale;
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 public class BukkitPlayer extends AbstractPlayerActor {
 
-    private Player player;
-    private WorldEditPlugin plugin;
+    private final Player player;
+    private final WorldEditPlugin plugin;
 
     public BukkitPlayer(Player player) {
         this(WorldEditPlugin.getInstance(), player);
@@ -106,6 +105,7 @@ public class BukkitPlayer extends AbstractPlayerActor {
     }
 
     @Override
+    @Deprecated
     public void printRaw(String msg) {
         for (String part : msg.split("\n")) {
             player.sendMessage(part);
@@ -113,35 +113,38 @@ public class BukkitPlayer extends AbstractPlayerActor {
     }
 
     @Override
+    @Deprecated
     public void print(String msg) {
         for (String part : msg.split("\n")) {
-            player.sendMessage("\u00A7d" + part);
+            player.sendMessage("§d" + part);
         }
     }
 
     @Override
+    @Deprecated
     public void printDebug(String msg) {
         for (String part : msg.split("\n")) {
-            player.sendMessage("\u00A77" + part);
+            player.sendMessage("§7" + part);
         }
     }
 
     @Override
+    @Deprecated
     public void printError(String msg) {
         for (String part : msg.split("\n")) {
-            player.sendMessage("\u00A7c" + part);
+            player.sendMessage("§c" + part);
         }
     }
 
     @Override
     public void print(Component component) {
-        TextAdapter.sendComponent(player, WorldEditText.format(component, getLocale()));
+        TextAdapter.sendMessage(player, WorldEditText.format(component, getLocale()));
     }
 
     @Override
-    public void setPosition(Vector3 pos, float pitch, float yaw) {
-        player.teleport(new Location(player.getWorld(), pos.getX(), pos.getY(),
-                pos.getZ(), yaw, pitch));
+    public boolean trySetPosition(Vector3 pos, float pitch, float yaw) {
+        return player.teleport(new Location(player.getWorld(), pos.getX(), pos.getY(),
+            pos.getZ(), yaw, pitch));
     }
 
     @Override
@@ -230,8 +233,8 @@ public class BukkitPlayer extends AbstractPlayerActor {
     public void sendAnnouncements() {
         if (WorldEditPlugin.getInstance().getBukkitImplAdapter() == null) {
             printError(TranslatableComponent.of("worldedit.version.bukkit.unsupported-adapter",
-                    TextComponent.of("https://www.enginehub.org/worldedit/#downloads", TextColor.AQUA)
-                        .clickEvent(ClickEvent.openUrl("https://www.enginehub.org/worldedit/#downloads"))));
+                    TextComponent.of("https://enginehub.org/worldedit/#downloads", TextColor.AQUA)
+                        .clickEvent(ClickEvent.openUrl("https://enginehub.org/worldedit/#downloads"))));
         }
     }
 

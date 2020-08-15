@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.sponge.adapter;
@@ -48,12 +48,12 @@ public class SpongeImplLoader {
     private static final String CLASS_SUFFIX = ".class";
 
     private static final String LOAD_ERROR_MESSAGE =
-            "\n**********************************************\n" +
-                    "** This WorldEdit version does not support your version of Sponge.\n" +
-                    "** WorldEdit will not function! \n" +
-                    "** \n" +
-                    "** Please ensure you are running the latest version\n" +
-                    "**********************************************\n";
+        "\n**********************************************\n"
+            + "** This WorldEdit version does not support your version of Sponge.\n"
+            + "** WorldEdit will not function! \n"
+            + "** \n"
+            + "** Please ensure you are running the latest version\n"
+            + "**********************************************\n";
 
     /**
      * Create a new instance.
@@ -91,7 +91,9 @@ public class SpongeImplLoader {
 
                 String className = jarEntry.getName().replaceAll("[/\\\\]+", ".");
 
-                if (!className.startsWith(SEARCH_PACKAGE_DOT) || jarEntry.isDirectory() || className.contains("$")) continue;
+                if (!className.startsWith(SEARCH_PACKAGE_DOT) || jarEntry.isDirectory() || className.contains("$")) {
+                    continue;
+                }
 
                 int beginIndex = 0;
                 int endIndex = className.length() - CLASS_SUFFIX.length();
@@ -157,15 +159,15 @@ public class SpongeImplLoader {
                 if (SpongeImplAdapter.class.isAssignableFrom(cls)) {
                     suitableAdapters.add((SpongeImplAdapter) cls.newInstance());
                 } else {
-                    log.warn("Failed to load the Sponge adapter class '" + className +
-                            "' because it does not implement " + SpongeImplAdapter.class.getCanonicalName());
+                    log.warn("Failed to load the Sponge adapter class '" + className
+                        + "' because it does not implement " + SpongeImplAdapter.class.getCanonicalName());
                 }
             } catch (ClassNotFoundException e) {
-                log.warn("Failed to load the Sponge adapter class '" + className +
-                        "' that is not supposed to be missing", e);
+                log.warn("Failed to load the Sponge adapter class '" + className
+                    + "' that is not supposed to be missing", e);
             } catch (IllegalAccessException e) {
-                log.warn("Failed to load the Sponge adapter class '" + className +
-                        "' that is not supposed to be raising this error", e);
+                log.warn("Failed to load the Sponge adapter class '" + className
+                    + "' that is not supposed to be raising this error", e);
             } catch (Throwable e) {
                 if (className.equals(customCandidate)) {
                     log.warn("Failed to load the Sponge adapter class '" + className + "'", e);

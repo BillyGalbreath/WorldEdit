@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions;
@@ -23,6 +23,8 @@ import com.google.common.collect.Lists;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.extension.platform.Actor;
+import com.sk89q.worldedit.internal.util.DeprecationUtil;
+import com.sk89q.worldedit.internal.util.NonAbstractForCompatibility;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.selector.limit.SelectorLimits;
 import com.sk89q.worldedit.util.formatting.text.Component;
@@ -32,7 +34,6 @@ import com.sk89q.worldedit.world.World;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 /**
@@ -134,8 +135,29 @@ public interface RegionSelector {
      * Get the number of blocks inside the region.
      *
      * @return number of blocks, or -1 if undefined
+     * @deprecated use {@link RegionSelector#getVolume()}
      */
-    int getArea();
+    @Deprecated
+    default int getArea() {
+        return (int) getVolume();
+    }
+
+    /**
+     * Get the number of blocks inside the region.
+     *
+     * @return number of blocks, or -1 if undefined
+     * @apiNote This must be overridden by new subclasses. See {@link NonAbstractForCompatibility}
+     *          for details
+     */
+    @NonAbstractForCompatibility(
+        delegateName = "getArea",
+        delegateParams = {}
+    )
+    default long getVolume() {
+        DeprecationUtil.checkDelegatingOverride(getClass());
+
+        return getArea();
+    }
 
     /**
      * Update the selector with changes to the region.
@@ -162,7 +184,7 @@ public interface RegionSelector {
     @Deprecated
     default List<String> getInformationLines() {
         return Lists.newArrayList();
-    };
+    }
 
     /**
      * Get lines of information about the selection.

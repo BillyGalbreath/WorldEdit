@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.entity;
@@ -24,6 +24,8 @@ import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.inventory.BlockBag;
 import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.internal.util.DeprecationUtil;
+import com.sk89q.worldedit.internal.util.NonAbstractForCompatibility;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.util.Direction;
@@ -37,7 +39,7 @@ import com.sk89q.worldedit.world.gamemode.GameMode;
 import javax.annotation.Nullable;
 
 /**
- * Represents a player
+ * Represents a player.
  */
 public interface Player extends Entity, Actor {
 
@@ -282,8 +284,40 @@ public interface Player extends Entity, Actor {
      * @param pos where to move them
      * @param pitch the pitch (up/down) of the player's view in degrees
      * @param yaw the yaw (left/right) of the player's view in degrees
+     * @deprecated This method may fail without indication. Use
+     * {@link #trySetPosition(Vector3, float, float)} instead
      */
-    void setPosition(Vector3 pos, float pitch, float yaw);
+    @Deprecated
+    default void setPosition(Vector3 pos, float pitch, float yaw) {
+        trySetPosition(pos, pitch, yaw);
+    }
+
+    /**
+     * Attempt to move the player.
+     *
+     * <p>
+     * This action may fail, due to other mods cancelling the move.
+     * If so, this method will return {@code false}.
+     * </p>
+     *
+     * @param pos where to move them
+     * @param pitch the pitch (up/down) of the player's view in degrees
+     * @param yaw the yaw (left/right) of the player's view in degrees
+     * @return if the move was able to occur
+     * @apiNote This must be overridden by new subclasses. See {@link NonAbstractForCompatibility}
+     *          for details
+     */
+    @NonAbstractForCompatibility(
+        delegateName = "setPosition",
+        delegateParams = { Vector3.class, float.class, float.class }
+    )
+    default boolean trySetPosition(Vector3 pos, float pitch, float yaw) {
+        DeprecationUtil.checkDelegatingOverride(getClass());
+
+        setPosition(pos, pitch, yaw);
+
+        return true;
+    }
 
     /**
      * Sends a fake block to the client.

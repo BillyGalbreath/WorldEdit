@@ -3,31 +3,32 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.util.formatting.component;
 
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.event.ClickEvent;
 import com.sk89q.worldedit.util.formatting.text.event.HoverEvent;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 public abstract class PaginationBox extends MessageBox {
 
@@ -38,7 +39,7 @@ public abstract class PaginationBox extends MessageBox {
     private int currentPage = -1;
 
     /**
-     * Creates a Paginated component
+     * Creates a Paginated component.
      *
      * @param title The title
      */
@@ -64,7 +65,7 @@ public abstract class PaginationBox extends MessageBox {
     }
 
     /**
-     * Creates a Paginated component
+     * Creates a Paginated component.
      *
      * @param title The title
      * @param pageCommand The command to run to switch page, with %page% representing page number
@@ -84,7 +85,7 @@ public abstract class PaginationBox extends MessageBox {
         }
         int pageCount = (int) Math.ceil(getComponentsSize() / (double) componentsPerPage);
         if (page < 1 || page > pageCount) {
-            throw new InvalidComponentException("Invalid page number.");
+            throw new InvalidComponentException(TranslatableComponent.of("worldedit.error.invalid-page"));
         }
         currentPage = page;
         final int lastComp = Math.min(page * componentsPerPage, getComponentsSize());

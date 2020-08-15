@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.bukkit.util;
@@ -37,7 +37,10 @@ import java.util.Set;
 public class CommandRegistration {
 
     static {
-      Bukkit.getServer().getHelpMap().registerHelpTopicFactory(DynamicPluginCommand.class, new DynamicPluginCommandHelpTopic.Factory());
+        Bukkit.getServer().getHelpMap().registerHelpTopicFactory(
+            DynamicPluginCommand.class,
+            new DynamicPluginCommandHelpTopic.Factory()
+        );
     }
 
     protected final Plugin plugin;
@@ -55,7 +58,9 @@ public class CommandRegistration {
     }
 
     public Plugin getCommandOwner(String label) {
-        if (serverCommandMap == null) return null;
+        if (serverCommandMap == null) {
+            return null;
+        }
         Command command = serverCommandMap.getCommand(label);
         if (command instanceof PluginIdentifiableCommand) {
             return ((PluginIdentifiableCommand) command).getPlugin();
@@ -87,8 +92,8 @@ public class CommandRegistration {
 
         CommandMap commandMap = ReflectionUtil.getField(plugin.getServer().getPluginManager(), "commandMap");
         if (commandMap == null) {
-            Bukkit.getServer().getLogger().severe(plugin.getDescription().getName() +
-                    ": Could not retrieve server CommandMap, using fallback instead!");
+            Bukkit.getServer().getLogger().severe(plugin.getDescription().getName()
+                + ": Could not retrieve server CommandMap, using fallback instead!");
             fallbackCommands = commandMap = new SimpleCommandMap(Bukkit.getServer());
             Bukkit.getServer().getPluginManager().registerEvents(new FallbackRegistrationListener(fallbackCommands), plugin);
         } else {

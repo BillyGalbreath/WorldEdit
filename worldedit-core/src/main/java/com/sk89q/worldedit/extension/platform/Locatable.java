@@ -3,18 +3,18 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.extension.platform;
@@ -54,9 +54,27 @@ public interface Locatable {
      * Sets the position of this actor.
      *
      * @param pos where to move them
+     * @deprecated This method may fail without indication. Use {@link #trySetPosition(Vector3)}
+     *      instead
      */
+    @Deprecated
     default void setPosition(Vector3 pos) {
-        setLocation(new Location(getExtent(), pos));
+        trySetPosition(pos);
+    }
+
+    /**
+     * Attempts to set the position of this actor.
+     *
+     * <p>
+     * This action may fail, due to other mods cancelling the move.
+     * If so, this method will return {@code false}.
+     * </p>
+     *
+     * @param pos the position to set
+     * @return if the position was able to be set
+     */
+    default boolean trySetPosition(Vector3 pos) {
+        return setLocation(new Location(getExtent(), pos));
     }
 
     /**

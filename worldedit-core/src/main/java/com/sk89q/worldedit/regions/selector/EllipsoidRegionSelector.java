@@ -3,23 +3,21 @@
  * Copyright (C) sk89q <http://www.sk89q.com>
  * Copyright (C) WorldEdit team and contributors
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.sk89q.worldedit.regions.selector;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -40,8 +38,9 @@ import com.sk89q.worldedit.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Creates a {@code EllipsoidRegionSelector} from a user's selections.
@@ -151,7 +150,7 @@ public class EllipsoidRegionSelector implements RegionSelector, CUIRegion {
             player.printInfo(TranslatableComponent.of(
                     "worldedit.selection.ellipsoid.explain.primary-area",
                     TextComponent.of(region.getCenter().toString()),
-                    TextComponent.of(region.getArea())
+                    TextComponent.of(region.getVolume())
             ));
         } else {
             player.printInfo(TranslatableComponent.of(
@@ -169,7 +168,7 @@ public class EllipsoidRegionSelector implements RegionSelector, CUIRegion {
             player.printInfo(TranslatableComponent.of(
                     "worldedit.selection.ellipsoid.explain.secondary-area",
                     TextComponent.of(region.getRadius().toString()),
-                    TextComponent.of(region.getArea())
+                    TextComponent.of(region.getVolume())
             ));
         } else {
             player.printInfo(TranslatableComponent.of(
@@ -238,8 +237,8 @@ public class EllipsoidRegionSelector implements RegionSelector, CUIRegion {
     }
 
     @Override
-    public int getArea() {
-        return region.getArea();
+    public long getVolume() {
+        return region.getVolume();
     }
 
     @Override
@@ -250,8 +249,8 @@ public class EllipsoidRegionSelector implements RegionSelector, CUIRegion {
 
     @Override
     public void describeLegacyCUI(LocalSession session, Actor player) {
-        session.dispatchCUIEvent(player, new SelectionPointEvent(0, region.getMinimumPoint(), getArea()));
-        session.dispatchCUIEvent(player, new SelectionPointEvent(1, region.getMaximumPoint(), getArea()));
+        session.dispatchCUIEvent(player, new SelectionPointEvent(0, region.getMinimumPoint(), getVolume()));
+        session.dispatchCUIEvent(player, new SelectionPointEvent(1, region.getMaximumPoint(), getVolume()));
     }
 
     @Override
