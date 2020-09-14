@@ -19,6 +19,9 @@
 
 package com.sk89q.worldedit.util.net;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
+import com.google.common.net.UrlEscapers;
 import com.sk89q.worldedit.util.io.Closer;
 
 import java.io.BufferedInputStream;
@@ -31,17 +34,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class HttpRequest implements Closeable {
 
@@ -87,9 +89,21 @@ public class HttpRequest implements Closeable {
      * @param form the form
      * @return this object
      */
-    public HttpRequest bodyForm(Form form) {
+    public HttpRequest bodyUrlEncodedForm(Form form) {
         contentType = "application/x-www-form-urlencoded";
-        body = form.toString().getBytes();
+        body = form.toUrlEncodedString().getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+
+    /**
+     * Submit form data.
+     *
+     * @param form the form
+     * @return this object
+     */
+    public HttpRequest bodyMultipartForm(Form form) {
+        contentType = "multipart/form-data;boundary=" + form.getFormDataSeparator();
+        body = form.toFormDataString().getBytes(StandardCharsets.UTF_8);
         return this;
     }
 
@@ -363,18 +377,24 @@ public class HttpRequest implements Closeable {
                     url.getPath(), url.getQuery(), url.getRef());
             url = uri.toURL();
             return url;
-        } catch (MalformedURLException e) {
-            return existing;
-        } catch (URISyntaxException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             return existing;
         }
     }
 
     /**
-     * Used with {@link #bodyForm(Form)}.
+     * Used with {@link #bodyUrlEncodedForm(Form)}.
      */
     public static final class Form {
-        public final List<String> elements = new ArrayList<>();
+
+        private static final Joiner.MapJoiner URL_ENCODER = Joiner.on('&')
+            .withKeyValueSeparator('=');
+        private static final Joiner CRLF_JOINER = Joiner.on("\r\n");
+
+        public final Map<String, String> elements = new LinkedHashMap<>();
+
+        private final String formDataSeparator = "EngineHubFormData"
+            + ThreadLocalRandom.current().nextInt(10000, 99999);
 
         private Form() {
         }
@@ -387,28 +407,43 @@ public class HttpRequest implements Closeable {
          * @return this object
          */
         public Form add(String key, String value) {
-            try {
-                elements.add(URLEncoder.encode(key, "UTF-8")
-                    + "=" + URLEncoder.encode(value, "UTF-8"));
-                return this;
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            elements.put(key, value);
+            return this;
         }
 
-        @Override
-        public String toString() {
+        public String getFormDataSeparator() {
+            return formDataSeparator;
+        }
+
+        public String toFormDataString() {
+            String separatorWithDashes = "--" + formDataSeparator;
             StringBuilder builder = new StringBuilder();
-            boolean first = true;
-            for (String element : elements) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append("&");
-                }
-                builder.append(element);
+
+            for (Map.Entry<String, String> element : elements.entrySet()) {
+                CRLF_JOINER.appendTo(
+                    builder,
+                    separatorWithDashes,
+                    "Content-Disposition: form-data; name=\"" + element.getKey() + "\"",
+                    "",
+                    element.getValue(),
+                    ""
+                );
             }
+
+            builder.append(separatorWithDashes).append("--");
+
             return builder.toString();
+        }
+
+        public String toUrlEncodedString() {
+            return URL_ENCODER.join(
+                elements.entrySet().stream()
+                    .map(e -> Maps.immutableEntry(
+                        UrlEscapers.urlFormParameterEscaper().escape(e.getKey()),
+                        UrlEscapers.urlFormParameterEscaper().escape(e.getValue())
+                    ))
+                    .iterator()
+            );
         }
 
         /**

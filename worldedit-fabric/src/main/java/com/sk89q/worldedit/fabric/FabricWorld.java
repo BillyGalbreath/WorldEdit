@@ -186,6 +186,7 @@ public class FabricWorld extends AbstractWorld {
 
     @Override
     public <B extends BlockStateHolder<B>> boolean setBlock(BlockVector3 position, B block, SideEffectSet sideEffects) throws WorldEditException {
+        clearContainerBlockContents(position);
         return worldNativeAccess.setBlock(position, block, sideEffects);
     }
 
@@ -626,7 +627,7 @@ public class FabricWorld extends AbstractWorld {
         final World world = getWorld();
         Box box = new Box(
             FabricAdapter.toBlockPos(region.getMinimumPoint()),
-            FabricAdapter.toBlockPos(region.getMaximumPoint())
+            FabricAdapter.toBlockPos(region.getMaximumPoint().add(BlockVector3.ONE))
         );
         List<net.minecraft.entity.Entity> nmsEntities = world.getEntitiesByType(
             null,
