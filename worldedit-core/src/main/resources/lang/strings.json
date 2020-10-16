@@ -27,6 +27,8 @@
     "worldedit.brush.gravity.equip": "Gravity brush equipped ({0}).",
     "worldedit.brush.butcher.equip": "Butcher brush equipped ({0}).",
     "worldedit.brush.operation.equip": "Set brush to {0}.",
+    "worldedit.brush.heightmap.equip": "Heightmap brush equipped ({0}).",
+    "worldedit.brush.heightmap.unknown": "Unknown heightmap brush: {0}.",
     "worldedit.brush.none.equip": "Brush unbound from your current item.",
 
     "worldedit.setbiome.changed": "Biomes were changed for approximately {0} blocks.",
@@ -108,6 +110,7 @@
     "worldedit.schematic.delete.failed": "Deletion of {0} failed! Is it read-only?",
     "worldedit.schematic.delete.deleted": "{0} has been deleted.",
     "worldedit.schematic.formats.title": "Available clipboard formats (Name: Lookup names)",
+    "worldedit.schematic.unsupported-minecraft-version": "This version of WorldEdit does not support your Minecraft version. Schematics will not work until this is resolved.",
 
     "worldedit.pos.already-set": "Position already set.",
     "worldedit.pos.console-require-coords": "You must provide coordinates as console.",
@@ -173,6 +176,7 @@
     "worldedit.remove.removed": "{0} entities have been marked for removal.",
     "worldedit.remove.explain-all": "Use -1 to remove all entities in loaded chunks",
     "worldedit.calc.invalid": "'{0}' could not be parsed as a valid expression",
+    "worldedit.calc.invalid.with-error": "'{0}' could not be parsed as a valid expression: '{1}'",
 
     "worldedit.paste.pasted": "The clipboard has been pasted at {0}",
     "worldedit.paste.selected": "Selected clipboard paste region.",
@@ -189,6 +193,7 @@
     "worldedit.curve.invalid-type": "//curve only works with convex polyhedral selections",
     "worldedit.replace.replaced": "{0} blocks have been replaced.",
     "worldedit.stack.changed": "{0} blocks changed. Undo with //undo",
+    "worldedit.stack.intersecting-region": "Stack offset must not collide with the region when using block units",
     "worldedit.regen.regenerated": "Region regenerated.",
     "worldedit.regen.failed": "Unable to regenerate chunks. Check console for details.",
     "worldedit.walls.changed": "{0} blocks have been changed.",
@@ -251,6 +256,10 @@
     "worldedit.pastebin.uploading": "(Please wait... sending output to pastebin...)",
     "worldedit.session.cant-find-session": "Unable to find session for {0}",
     "worldedit.platform.no-file-dialog": "File dialogs are not supported in your environment.",
+
+    "worldedit.asset.load.loading": "(Please wait... loading asset.)",
+    "worldedit.asset.load.still-loading": "(Please wait... still loading asset.)",
+    "worldedit.asset.load.failed": "Failed to load asset",
 
     "worldedit.tool.max-block-changes": "Max blocks change limit reached.",
     "worldedit.tool.no-block": "No block in sight!",

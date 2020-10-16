@@ -53,6 +53,7 @@ import com.sk89q.worldedit.scripting.RhinoCraftScriptEngine;
 import com.sk89q.worldedit.session.SessionManager;
 import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.util.Location;
+import com.sk89q.worldedit.util.asset.AssetLoaders;
 import com.sk89q.worldedit.util.concurrency.EvenMoreExecutors;
 import com.sk89q.worldedit.util.concurrency.LazyReference;
 import com.sk89q.worldedit.util.eventbus.EventBus;
@@ -122,10 +123,7 @@ public final class WorldEdit {
     private final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(
             EvenMoreExecutors.newBoundedCachedThreadPool(0, 1, 20, "WorldEdit Task Executor - %s"));
     private final Supervisor supervisor = new SimpleSupervisor();
-    private final LazyReference<TranslationManager> translationManager =
-            LazyReference.from(() -> new TranslationManager(
-                    WorldEdit.getInstance().getPlatformManager().queryCapability(Capability.CONFIGURATION).getResourceLoader()
-            ));
+    private final AssetLoaders assetLoaders = new AssetLoaders(this);
 
     private final BlockFactory blockFactory = new BlockFactory(this);
     private final ItemFactory itemFactory = new ItemFactory(this);
@@ -248,7 +246,17 @@ public final class WorldEdit {
      * @return the translation manager
      */
     public TranslationManager getTranslationManager() {
-        return translationManager.getValue();
+        return getPlatformManager().queryCapability(Capability.CONFIGURATION)
+            .getTranslationManager();
+    }
+
+    /**
+     * Return the asset loaders instance.
+     *
+     * @return the asset loaders instance
+     */
+    public AssetLoaders getAssetLoaders() {
+        return assetLoaders;
     }
 
     /**
